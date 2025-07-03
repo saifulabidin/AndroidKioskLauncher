@@ -3,5 +3,5 @@
     <font
         android:fontStyle="normal"
         android:fontWeight="500"
-        android:font="sans-serif-medium" />
+        android:font="@android:string/sans_serif" />
 </font-family>
