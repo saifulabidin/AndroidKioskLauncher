@@ -3,5 +3,5 @@
     <font
         android:fontStyle="normal"
         android:fontWeight="700"
-        android:font="sans-serif-condensed" />
+        android:fontFamily="sans-serif-condensed" />
 </font-family>
