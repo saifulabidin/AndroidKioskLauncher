@@ -161,8 +161,6 @@ class EnhancedEnterpriseKioskService : Service() {
     private fun initializeEnterpriseFeatures() {
         serviceScope.launch {
             try {
-                // Initialize enterprise security
-                initializeSecurity()
                 
                 // Initialize network monitoring
                 initializeNetworkMonitoring()
@@ -177,14 +175,6 @@ class EnhancedEnterpriseKioskService : Service() {
             } catch (e: Exception) {
                 updateNotification("Initialization error: ${e.message}")
             }
-        }
-    }
-
-    private suspend fun initializeSecurity() {
-        // Setup enterprise security features
-        if (isDeviceOwner()) {
-            securityManager.setSessionTimeout(30)
-            securityManager.blockScreenRecording(true)
         }
     }
 
@@ -264,7 +254,6 @@ class EnhancedEnterpriseKioskService : Service() {
             try {
                 if (isDeviceOwner()) {
                     enableLockTaskMode()
-                    enableSecurityPolicies()
                     enableHardwareRestrictions()
                     enableNetworkRestrictions()
                     
@@ -312,12 +301,6 @@ class EnhancedEnterpriseKioskService : Service() {
                 emptyArray()
             )
         }
-    }
-
-    private suspend fun enableSecurityPolicies() {
-        securityManager.setPasswordProtection(true)
-        securityManager.blockScreenRecording(true)
-        securityManager.setSessionTimeout(30)
     }
 
     private suspend fun disableSecurityPolicies() {

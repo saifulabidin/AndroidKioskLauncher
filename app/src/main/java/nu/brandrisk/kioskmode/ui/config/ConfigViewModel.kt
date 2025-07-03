@@ -115,27 +115,6 @@ class ConfigViewModel @Inject constructor(
         }
     }
 
-    fun toggleBiometricLock(enabled: Boolean) {
-        viewModelScope.launch {
-            val result = securityManager.setBiometricLock(enabled)
-            _securitySettings.value = _securitySettings.value.copy(biometricLockEnabled = result)
-        }
-    }
-
-    fun setSessionTimeout(minutes: Int) {
-        viewModelScope.launch {
-            securityManager.setSessionTimeout(minutes)
-            _securitySettings.value = _securitySettings.value.copy(sessionTimeoutMinutes = minutes)
-        }
-    }
-
-    fun toggleScreenRecordingBlock(enabled: Boolean) {
-        viewModelScope.launch {
-            val result = securityManager.blockScreenRecording(enabled)
-            _securitySettings.value = _securitySettings.value.copy(screenRecordingBlocked = result)
-        }
-    }
-
     // Network Management Methods
     fun configureEnterpriseWiFi(ssid: String, password: String, security: String) {
         viewModelScope.launch {
