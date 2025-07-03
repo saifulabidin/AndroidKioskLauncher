@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        compose_version = '1.6.8'
+        compose_version = '1.5.14'
         hilt_version = '2.51.1'
         room_version = '2.6.1'
         kotlin_version = '1.9.24'
