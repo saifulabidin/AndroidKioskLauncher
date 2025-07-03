@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged|typeViewClicked|typeNotificationStateChanged"
+    android:description="@string/accessibility_service_description"
+    android:packageNames="com.android.systemui,com.miui.home,com.android.launcher3,android.permission,com.miui.securitycenter,com.android.settings"
+    android:accessibilityEventTypes="typeAllMask"
+    android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows|flagRequestTouchExplorationMode|flagRequestEnhancedWebAccessibility|flagReportViewIds"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagRetrieveInteractiveWindows|flagReportViewIds|flagRequestEnhancedWebAccessibility"
+    android:notificationTimeout="0"
     android:canRetrieveWindowContent="true"
-    android:notificationTimeout="100"
-    android:packageNames="com.android.systemui,com.android.settings"
-    android:description="@string/accessibility_service_description" />
+    android:canRequestTouchExplorationMode="true"
+    android:canRequestEnhancedWebAccessibility="true"
+    android:canPerformGestures="true"
+    android:canRequestFilterKeyEvents="true" />

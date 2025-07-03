@@ -12,7 +12,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import nu.brandrisk.kioskmode.domain.AppRepository
+import nu.brandrisk.kioskmode.service.EnhancedEnterpriseKioskService
 import nu.brandrisk.kioskmode.ui.adbsetup.AdbSetupView
 import nu.brandrisk.kioskmode.ui.config.ConfigView
 import nu.brandrisk.kioskmode.ui.configparentalcheck.ConfigParentalCheckView
@@ -29,6 +31,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize enterprise services
+        initializeEnterpriseServices()
 
         lifecycleScope.launchWhenStarted {
             appRepository.refreshApps()
@@ -62,5 +67,93 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun initializeEnterpriseServices() {
+        lifecycleScope.launch {
+            try {
+                // Start enhanced enterprise monitoring service
+                EnhancedEnterpriseKioskService.startMonitoring(this@MainActivity)
+
+                // Initialize enterprise features
+                initializeEnterpriseFeatures()
+
+            } catch (e: Exception) {
+                // Log error but continue
+                android.util.Log.e("MainActivity", "Failed to initialize enterprise services", e)
+            }
+        }
+    }
+
+    private fun initializeEnterpriseFeatures() {
+        // Check device admin status
+        checkDeviceAdminStatus()
+
+        // Check MIUI optimizations
+        checkMIUIOptimizations()
+
+        // Check accessibility permissions
+        checkAccessibilityPermissions()
+
+        // Check notification access
+        checkNotificationAccess()
+    }
+
+    private fun checkDeviceAdminStatus() {
+        val devicePolicyManager = getSystemService(DEVICE_POLICY_SERVICE) as android.app.admin.DevicePolicyManager
+        if (!devicePolicyManager.isDeviceOwnerApp(packageName)) {
+            // Device admin not enabled - show setup instructions
+            android.util.Log.w("MainActivity", "Device admin not enabled")
+        }
+    }
+
+    private fun checkMIUIOptimizations() {
+        // Check if running on MIUI and suggest optimizations
+        if (isMIUIDevice()) {
+            // Could show MIUI optimization dialog
+            android.util.Log.i("MainActivity", "MIUI device detected - optimizations available")
+        }
+    }
+
+    private fun checkAccessibilityPermissions() {
+        // Check if accessibility service is enabled
+        val accessibilityEnabled = android.provider.Settings.Secure.getString(
+            contentResolver,
+            android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        )
+
+        if (accessibilityEnabled?.contains(packageName) != true) {
+            android.util.Log.w("MainActivity", "Accessibility service not enabled")
+        }
+    }
+
+    private fun checkNotificationAccess() {
+        // Check notification listener access
+        val notificationListeners = android.provider.Settings.Secure.getString(
+            contentResolver,
+            "enabled_notification_listeners"
+        )
+
+        if (notificationListeners?.contains(packageName) != true) {
+            android.util.Log.w("MainActivity", "Notification listener not enabled")
+        }
+    }
+
+    private fun isMIUIDevice(): Boolean {
+        return try {
+            val miuiVersion = android.os.SystemProperties.get("ro.miui.ui.version.name")
+            !miuiVersion.isNullOrEmpty()
+        } catch (e: Exception) {
+            android.os.Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true) ||
+                    android.os.Build.BRAND.equals("Xiaomi", ignoreCase = true) ||
+                    android.os.Build.BRAND.equals("Redmi", ignoreCase = true) ||
+                    android.os.Build.BRAND.equals("POCO", ignoreCase = true)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Ensure enterprise monitoring is active
+        EnhancedEnterpriseKioskService.startMonitoring(this)
     }
 }

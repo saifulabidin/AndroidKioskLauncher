@@ -43,4 +43,104 @@
     <string name="permission_accessibility">Required for system UI control</string>
     <string name="permission_notification_access">Required for notification management</string>
 
+    <!-- Enterprise Features -->
+    <string name="enterprise_kiosk_manager">Enterprise Kiosk Manager</string>
+    <string name="professional_kiosk_solution">Professional kiosk solution for Xiaomi devices</string>
+    <string name="security_features">Security Features</string>
+    <string name="network_controls">Network Controls</string>
+    <string name="hardware_controls">Hardware Controls</string>
+    <string name="miui_optimizations">MIUI Optimizations</string>
+    
+    <!-- Security Settings -->
+    <string name="password_protection">Password Protection</string>
+    <string name="set_admin_password">Set admin password</string>
+    <string name="biometric_lock">Biometric Lock</string>
+    <string name="fingerprint_face_unlock">Fingerprint/Face unlock</string>
+    <string name="session_timeout">Session Timeout</string>
+    <string name="auto_lock_after_inactivity">Auto-lock after inactivity</string>
+    <string name="screen_recording_block">Screen Recording Block</string>
+    <string name="prevent_screenshots">Prevent screenshots</string>
+    
+    <!-- MIUI Security Integration -->
+    <string name="miui_security_integration">MIUI Security Integration</string>
+    <string name="second_space">Second Space</string>
+    <string name="miui_workspace_isolation">MIUI workspace isolation</string>
+    <string name="app_lock_bypass">App Lock Bypass</string>
+    <string name="skip_miui_app_locks">Skip MIUI app locks</string>
+    <string name="security_center">Security Center</string>
+    <string name="miui_security_policies">MIUI security policies</string>
+    
+    <!-- Network Management -->
+    <string name="wifi_management">WiFi Management</string>
+    <string name="configure_enterprise_wifi">Configure enterprise WiFi</string>
+    <string name="mobile_data">Mobile Data</string>
+    <string name="apn_and_data_controls">APN and data controls</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="device_connectivity">Device connectivity</string>
+    <string name="nfc">NFC</string>
+    <string name="near_field_communication">Near field communication</string>
+    <string name="vpn">VPN</string>
+    <string name="enterprise_vpn_setup">Enterprise VPN setup</string>
+    
+    <!-- Hardware Management -->
+    <string name="camera">Camera</string>
+    <string name="control_camera_access">Control camera access</string>
+    <string name="microphone">Microphone</string>
+    <string name="audio_recording_controls">Audio recording controls</string>
+    <string name="display">Display</string>
+    <string name="brightness_and_rotation">Brightness and rotation</string>
+    <string name="volume">Volume</string>
+    <string name="system_audio_controls">System audio controls</string>
+    <string name="flashlight">Flashlight</string>
+    <string name="led_torch_control">LED torch control</string>
+    
+    <!-- MIUI Optimizations -->
+    <string name="battery_whitelist">Battery Whitelist</string>
+    <string name="prevent_app_killing">Prevent app killing</string>
+    <string name="autostart_permission">Autostart Permission</string>
+    <string name="boot_optimization">Boot optimization</string>
+    <string name="game_turbo">Game Turbo</string>
+    <string name="performance_mode">Performance mode</string>
+    
+    <!-- Quick Actions -->
+    <string name="quick_actions">Quick Actions</string>
+    <string name="wifi">WiFi</string>
+    <string name="brightness">Brightness</string>
+    <string name="apps_available">Apps Available</string>
+    <string name="no_apps_enabled">No Apps Enabled</string>
+    <string name="configure_apps_to_get_started">Configure apps in settings to get started</string>
+    
+    <!-- Enterprise Status -->
+    <string name="enterprise_mode_active">Enterprise Mode Active</string>
+    <string name="professional_mode_active">Professional Mode Active</string>
+    <string name="system_monitoring_active">System monitoring active</string>
+    <string name="enterprise_policies_enforced">Enterprise policies enforced</string>
+    
+    <!-- Authentication -->
+    <string name="authentication_required">Authentication Required</string>
+    <string name="enterprise_authentication">Enterprise Authentication</string>
+    <string name="solve_to_continue">Solve to continue</string>
+    <string name="incorrect_answer">Incorrect answer, try again</string>
+    <string name="authentication_failed">Authentication failed</string>
+    
+    <!-- Error Messages -->
+    <string name="feature_not_available">Feature not available on this device</string>
+    <string name="permission_required">Permission required</string>
+    <string name="device_admin_required">Device administrator permission required</string>
+    <string name="miui_device_required">This feature requires a Xiaomi MIUI device</string>
+    <string name="operation_failed">Operation failed</string>
+    <string name="operation_successful">Operation successful</string>
+    
+    <!-- Settings Categories -->
+    <string name="bulk_app_management">Bulk App Management</string>
+    <string name="kiosk_mode_control">Kiosk Mode Control</string>
+    <string name="admin">Admin</string>
+    
+    <!-- Xiaomi Specific -->
+    <string name="xiaomi_optimization_required">Xiaomi Optimization Required</string>
+    <string name="miui_setup_instructions">Please configure the following MIUI settings for optimal kiosk performance</string>
+    <string name="open_miui_settings">Open MIUI Settings</string>
+    <string name="battery_optimization_setup">Battery Optimization Setup</string>
+    <string name="autostart_management_setup">Autostart Management Setup</string>
+    <string name="second_space_setup">Second Space Setup</string>
 </resources>
