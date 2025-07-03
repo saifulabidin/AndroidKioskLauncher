@@ -7,6 +7,7 @@
     <color name="enterprise_accent">#FF9800</color>
     
     <!-- Background Colors -->
+    <color name="enterprise_background">#F5F5F5</color>
     <color name="enterprise_background_dark">#1A1A2E</color>
     <color name="enterprise_background_medium">#16213E</color>
     <color name="enterprise_background_light">#0F3460</color>
@@ -28,6 +29,8 @@
     <color name="enterprise_info">#2196F3</color>
     
     <!-- Security Colors -->
+    <color name="security_primary">#FF5722</color>
+    <color name="security_background">#FFF3E0</color>
     <color name="enterprise_security_high">#FF5722</color>
     <color name="enterprise_security_medium">#FF9800</color>
     <color name="enterprise_security_low">#4CAF50</color>

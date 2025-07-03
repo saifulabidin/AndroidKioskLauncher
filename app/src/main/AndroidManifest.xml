@@ -39,7 +39,6 @@
     
     <!-- SureLock-equivalent App Management -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
-    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
     <uses-permission android:name="android.permission.INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.DELETE_PACKAGES" />
     <uses-permission android:name="android.permission.CLEAR_APP_CACHE" />
@@ -62,14 +61,6 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <uses-permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
-    
-    <!-- Samsung Knox Enterprise Permissions (OPTIONAL - Skip for now) -->
-    <!-- <uses-permission android:name="com.samsung.android.knox.permission.KNOX_KIOSK_MODE" /> -->
-    <!-- <uses-permission android:name="com.samsung.android.knox.permission.KNOX_SECURITY" /> -->
-    
-    <!-- Samsung MDM Permissions (OPTIONAL - Skip for now) -->
-    <!-- <uses-permission android:name="android.permission.sec.ENTERPRISE_DEVICE_ADMIN" /> -->
-    <!-- <uses-permission android:name="android.permission.sec.MDM_KIOSK_MODE" /> -->
     
     <!-- Accessibility & Input -->
     <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />

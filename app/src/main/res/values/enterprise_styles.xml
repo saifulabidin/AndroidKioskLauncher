@@ -1,5 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Base Enterprise Style -->
+    <style name="Enterprise">
+        <item name="android:fontFamily">@font/roboto_regular</item>
+    </style>
+
+    <!-- Enterprise Button Base Style -->
+    <style name="Enterprise.Button">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/roboto_medium</item>
+        <item name="android:paddingHorizontal">24dp</item>
+        <item name="android:paddingVertical">12dp</item>
+        <item name="android:layout_height">48dp</item>
+    </style>
+
+    <!-- Enterprise Status Base Style -->
+    <style name="Enterprise.Status">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
+    </style>
+
+    <!-- Enterprise MIUI Base Style -->
+    <style name="Enterprise.MIUI">
+        <item name="android:fontFamily">@font/roboto_regular</item>
+    </style>
+
+    <!-- Enterprise Text Appearance Base Style -->
+    <style name="Enterprise.TextAppearance">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/enterprise_text_primary</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
+    </style>
+
     <!-- Enterprise Text Styles -->
     <style name="Enterprise.TextAppearance.Headline1">
         <item name="android:textSize">32sp</item>
