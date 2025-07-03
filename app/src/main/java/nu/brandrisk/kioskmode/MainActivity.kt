@@ -28,6 +28,8 @@ import nu.brandrisk.kioskmode.ui.configparentalcheck.ConfigParentalCheckView
 import nu.brandrisk.kioskmode.ui.launcher.LauncherView
 import nu.brandrisk.kioskmode.ui.theme.KioskModeTheme
 import nu.brandrisk.kioskmode.utils.Routes
+import androidx.core.content.ContextCompat
+import androidx.core.app.ActivityCompat
 import javax.inject.Inject
 
 @AndroidEntryPoint
