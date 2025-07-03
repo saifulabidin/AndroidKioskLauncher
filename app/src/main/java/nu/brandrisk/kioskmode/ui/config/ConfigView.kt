@@ -57,6 +57,9 @@ fun ConfigView(
                 is UiEvent.Navigate -> {
                     navController.navigate(event.route)
                 }
+                is UiEvent.ShowMessage -> {
+                    android.widget.Toast.makeText(context, event.message, android.widget.Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -92,18 +95,24 @@ fun ConfigView(
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
-                text = { Text("Security") },
-                icon = { Icon(Icons.Default.Lock, contentDescription = "Security") }
+                text = { Text("System") },
+                icon = { Icon(Icons.Default.Android, contentDescription = "System") }
             )
             Tab(
                 selected = selectedTab == 2,
                 onClick = { selectedTab = 2 },
-                text = { Text("Network") },
-                icon = { Icon(Icons.Default.Wifi, contentDescription = "Network") }
+                text = { Text("Security") },
+                icon = { Icon(Icons.Default.Lock, contentDescription = "Security") }
             )
             Tab(
                 selected = selectedTab == 3,
                 onClick = { selectedTab = 3 },
+                text = { Text("Network") },
+                icon = { Icon(Icons.Default.Wifi, contentDescription = "Network") }
+            )
+            Tab(
+                selected = selectedTab == 4,
+                onClick = { selectedTab = 4 },
                 text = { Text("Hardware") },
                 icon = { Icon(Icons.Default.Settings, contentDescription = "Hardware") }
             )
@@ -117,9 +126,10 @@ fun ConfigView(
                 context = context,
                 launcher = launcher
             )
-            1 -> SecurityManagementTab(viewModel = viewModel)
-            2 -> NetworkManagementTab(viewModel = viewModel)
-            3 -> HardwareManagementTab(viewModel = viewModel)
+            1 -> SystemManagementTab(viewModel = viewModel)
+            2 -> SecurityManagementTab(viewModel = viewModel)
+            3 -> NetworkManagementTab(viewModel = viewModel)
+            4 -> HardwareManagementTab(viewModel = viewModel)
         }
     }
 }
@@ -337,10 +347,18 @@ private fun SecurityManagementTab(
                     Text("🔒 Security Features", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    SecurityOptionItem("Password Protection", "Set admin password", Icons.Default.Lock)
-                    SecurityOptionItem("Biometric Lock", "Fingerprint/Face unlock", Icons.Default.Star)
-                    SecurityOptionItem("Session Timeout", "Auto-lock after inactivity", Icons.Default.Schedule)
-                    SecurityOptionItem("Screen Recording Block", "Prevent screenshots", Icons.Default.Lock)
+                    SecurityOptionItem("Password Protection", "Set admin password", Icons.Default.Lock) {
+                        viewModel.showPasswordManager()
+                    }
+                    SecurityOptionItem("Biometric Lock", "Fingerprint/Face unlock", Icons.Default.Star) {
+                        viewModel.showBiometricSettings()
+                    }
+                    SecurityOptionItem("Session Timeout", "Auto-lock after inactivity", Icons.Default.Schedule) {
+                        viewModel.showSessionTimeoutSettings()
+                    }
+                    SecurityOptionItem("Screen Recording Block", "Prevent screenshots", Icons.Default.Lock) {
+                        viewModel.toggleScreenRecordingBlock()
+                    }
                 }
             }
         }
@@ -351,9 +369,15 @@ private fun SecurityManagementTab(
                     Text("🛡️ MIUI Security Integration", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    SecurityOptionItem("Second Space", "MIUI workspace isolation", Icons.Default.Build)
-                    SecurityOptionItem("App Lock Bypass", "Skip MIUI app locks", Icons.Default.Lock)
-                    SecurityOptionItem("Security Center", "MIUI security policies", Icons.Default.Security)
+                    SecurityOptionItem("Second Space", "MIUI workspace isolation", Icons.Default.Build) {
+                        viewModel.showSecondSpaceSettings()
+                    }
+                    SecurityOptionItem("App Lock Bypass", "Skip MIUI app locks", Icons.Default.Lock) {
+                        viewModel.showAppLockBypassSettings()
+                    }
+                    SecurityOptionItem("Security Center", "MIUI security policies", Icons.Default.Security) {
+                        viewModel.showMIUISecurityCenter()
+                    }
                 }
             }
         }
@@ -374,11 +398,21 @@ private fun NetworkManagementTab(
                     Text("📶 Network Controls", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    NetworkOptionItem("WiFi Management", "Configure enterprise WiFi", Icons.Default.Wifi)
-                    NetworkOptionItem("Mobile Data", "APN and data controls", Icons.Default.Phone)
-                    NetworkOptionItem("Bluetooth", "Device connectivity", Icons.Default.Share)
-                    NetworkOptionItem("NFC", "Near field communication", Icons.Default.Phone)
-                    NetworkOptionItem("VPN", "Enterprise VPN setup", Icons.Default.Lock)
+                    NetworkOptionItem("WiFi Management", "Configure enterprise WiFi", Icons.Default.Wifi) {
+                        viewModel.showWiFiSettings()
+                    }
+                    NetworkOptionItem("Mobile Data", "APN and data controls", Icons.Default.Phone) {
+                        viewModel.showMobileDataSettings()
+                    }
+                    NetworkOptionItem("Bluetooth", "Device connectivity", Icons.Default.Share) {
+                        viewModel.showBluetoothSettings()
+                    }
+                    NetworkOptionItem("NFC", "Near field communication", Icons.Default.Phone) {
+                        viewModel.showNFCSettings()
+                    }
+                    NetworkOptionItem("VPN", "Enterprise VPN setup", Icons.Default.Lock) {
+                        viewModel.showVPNSettings()
+                    }
                 }
             }
         }
@@ -399,11 +433,21 @@ private fun HardwareManagementTab(
                     Text("⚙️ Hardware Controls", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    HardwareOptionItem("Camera", "Control camera access", Icons.Default.PhotoCamera)
-                    HardwareOptionItem("Microphone", "Audio recording controls", Icons.Default.Mic)
-                    HardwareOptionItem("Display", "Brightness and rotation", Icons.Default.Settings)
-                    HardwareOptionItem("Volume", "System audio controls", Icons.AutoMirrored.Filled.VolumeUp)
-                    HardwareOptionItem("Flashlight", "LED torch control", Icons.Default.FlashOn)
+                    HardwareOptionItem("Camera", "Control camera access", Icons.Default.PhotoCamera) {
+                        viewModel.showCameraSettings()
+                    }
+                    HardwareOptionItem("Microphone", "Audio recording controls", Icons.Default.Mic) {
+                        viewModel.showMicrophoneSettings()
+                    }
+                    HardwareOptionItem("Display", "Brightness and rotation", Icons.Default.Settings) {
+                        viewModel.showDisplaySettings()
+                    }
+                    HardwareOptionItem("Volume", "System audio controls", Icons.AutoMirrored.Filled.VolumeUp) {
+                        viewModel.showVolumeSettings()
+                    }
+                    HardwareOptionItem("Flashlight", "LED torch control", Icons.Default.FlashOn) {
+                        viewModel.showFlashlightSettings()
+                    }
                 }
             }
         }
@@ -414,9 +458,15 @@ private fun HardwareManagementTab(
                     Text("🔋 MIUI Optimizations", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    HardwareOptionItem("Battery Whitelist", "Prevent app killing", Icons.Default.BatteryFull)
-                    HardwareOptionItem("Autostart Permission", "Boot optimization", Icons.Default.Power)
-                    HardwareOptionItem("Game Turbo", "Performance mode", Icons.Default.Speed)
+                    HardwareOptionItem("Battery Whitelist", "Prevent app killing", Icons.Default.BatteryFull) {
+                        viewModel.showBatteryOptimizationSettings()
+                    }
+                    HardwareOptionItem("Autostart Permission", "Boot optimization", Icons.Default.Power) {
+                        viewModel.showAutostartSettings()
+                    }
+                    HardwareOptionItem("Game Turbo", "Performance mode", Icons.Default.Speed) {
+                        viewModel.showGameTurboSettings()
+                    }
                 }
             }
         }
@@ -424,8 +474,41 @@ private fun HardwareManagementTab(
 }
 
 @Composable
-private fun SecurityOptionItem(title: String, description: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+private fun SecurityOptionItem(title: String, description: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
     Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onClick() },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Medium)
+            Text(description, fontSize = 12.sp, color = Color.Gray)
+        }
+        Icon(Icons.Default.ChevronRight, contentDescription = null)
+    }
+}
+
+@Composable
+private fun NetworkOptionItem(title: String, description: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onClick() },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Medium)
+            Text(description, fontSize = 12.sp, color = Color.Gray)
+        }
+        Icon(Icons.Default.ChevronRight, contentDescription = null)
+    }
+}
+
+@Composable
+private fun HardwareOptionItem(title: String, description: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onClick() },
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -440,25 +523,92 @@ private fun SecurityOptionItem(title: String, description: String, icon: android
 }
 
 @Composable
-private fun NetworkOptionItem(title: String, description: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+private fun SystemManagementTab(
+    viewModel: ConfigViewModel
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
-        Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Medium)
-            Text(description, fontSize = 12.sp, color = Color.Gray)
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("🚀 Boot & Launcher", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    SystemOptionItem("Auto Launch on Boot", "Start launcher automatically", Icons.Default.Power) {
+                        viewModel.toggleAutoLaunchOnBoot()
+                    }
+                    SystemOptionItem("Set as Default Launcher", "Make this the default home app", Icons.Default.Home) {
+                        viewModel.setAsDefaultLauncher()
+                    }
+                    SystemOptionItem("Boot Animation", "Customize startup screen", Icons.Default.PlayArrow) {
+                        viewModel.showBootAnimationSettings()
+                    }
+                }
+            }
         }
-        Icon(Icons.Default.ChevronRight, contentDescription = null)
+        
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("📱 UI & Display", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    SystemOptionItem("Hide Status Bar", "Hide notification bar", Icons.Default.Visibility) {
+                        viewModel.toggleStatusBarVisibility()
+                    }
+                    SystemOptionItem("Hide Navigation Bar", "Hide navigation buttons", Icons.Default.Navigation) {
+                        viewModel.toggleNavigationBarVisibility()
+                    }
+                    SystemOptionItem("Immersive Mode", "Full screen mode", Icons.Default.Fullscreen) {
+                        viewModel.toggleImmersiveMode()
+                    }
+                    SystemOptionItem("Screen Orientation", "Lock screen rotation", Icons.Default.ScreenRotation) {
+                        viewModel.showOrientationSettings()
+                    }
+                }
+            }
+        }
+        
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("⚡ Performance", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    SystemOptionItem("CPU Governor", "Performance tuning", Icons.Default.Speed) {
+                        viewModel.showCPUGovernorSettings()
+                    }
+                    SystemOptionItem("RAM Management", "Memory optimization", Icons.Default.Memory) {
+                        viewModel.showRAMManagementSettings()
+                    }
+                    SystemOptionItem("Thermal Control", "Temperature management", Icons.Default.DeviceThermostat) {
+                        viewModel.showThermalSettings()
+                    }
+                }
+            }
+        }
+        
+        item {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("⚙️ Device Owner", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    SystemOptionItem("Remove Device Owner", "Uninstall device admin", Icons.Default.Delete) {
+                        viewModel.removeDeviceOwner()
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun HardwareOptionItem(title: String, description: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+private fun SystemOptionItem(title: String, description: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))

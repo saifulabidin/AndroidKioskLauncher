@@ -360,6 +360,283 @@ class ConfigViewModel @Inject constructor(
             // Implementation for importing app configurations
         }
     }
+
+    // Security Management Functions
+    fun showPasswordManager() {
+        viewModelScope.launch {
+            _uiEvent.send(UiEvent.ShowMessage("Opening Password Manager..."))
+            // TODO: Implement password manager dialog
+        }
+    }
+
+    fun showBiometricSettings() {
+        viewModelScope.launch {
+            _uiEvent.send(UiEvent.ShowMessage("Biometric settings available with device owner"))
+            // TODO: Implement biometric settings
+        }
+    }
+
+    fun showSessionTimeoutSettings() {
+        viewModelScope.launch {
+            _uiEvent.send(UiEvent.ShowMessage("Session timeout configuration"))
+            // TODO: Implement session timeout
+        }
+    }
+
+    fun toggleScreenRecordingBlock() {
+        viewModelScope.launch {
+            if (isDeviceOwner(context)) {
+                securityManager.toggleScreenRecordingBlock()
+                _uiEvent.send(UiEvent.ShowMessage("Screen recording block toggled"))
+            } else {
+                _uiEvent.send(UiEvent.ShowMessage("Device owner required"))
+            }
+        }
+    }
+
+    fun showSecondSpaceSettings() {
+        viewModelScope.launch {
+            if (xiaomiManager.isMIUIDevice()) {
+                xiaomiManager.openSecondSpaceSettings()
+                _uiEvent.send(UiEvent.ShowMessage("Opening MIUI Second Space"))
+            } else {
+                _uiEvent.send(UiEvent.ShowMessage("MIUI device required"))
+            }
+        }
+    }
+
+    fun showAppLockBypassSettings() {
+        viewModelScope.launch {
+            _uiEvent.send(UiEvent.ShowMessage("App lock bypass configuration"))
+            // TODO: Implement app lock bypass
+        }
+    }
+
+    fun showMIUISecurityCenter() {
+        viewModelScope.launch {
+            if (xiaomiManager.isMIUIDevice()) {
+                xiaomiManager.openSecurityCenter()
+                _uiEvent.send(UiEvent.ShowMessage("Opening MIUI Security Center"))
+            } else {
+                _uiEvent.send(UiEvent.ShowMessage("MIUI device required"))
+            }
+        }
+    }
+
+    // Network Management Functions
+    fun showWiFiSettings() {
+        viewModelScope.launch {
+            networkManager.openWiFiSettings()
+            _uiEvent.send(UiEvent.ShowMessage("Opening WiFi settings"))
+        }
+    }
+
+    fun showMobileDataSettings() {
+        viewModelScope.launch {
+            networkManager.openMobileDataSettings()
+            _uiEvent.send(UiEvent.ShowMessage("Opening mobile data settings"))
+        }
+    }
+
+    fun showBluetoothSettings() {
+        viewModelScope.launch {
+            networkManager.openBluetoothSettings()
+            _uiEvent.send(UiEvent.ShowMessage("Opening Bluetooth settings"))
+        }
+    }
+
+    fun showNFCSettings() {
+        viewModelScope.launch {
+            networkManager.openNFCSettings()
+            _uiEvent.send(UiEvent.ShowMessage("Opening NFC settings"))
+        }
+    }
+
+    fun showVPNSettings() {
+        viewModelScope.launch {
+            networkManager.openVPNSettings()
+            _uiEvent.send(UiEvent.ShowMessage("Opening VPN settings"))
+        }
+    }
+
+    // Hardware Management Functions
+    fun showCameraSettings() {
+        viewModelScope.launch {
+            if (isDeviceOwner(context)) {
+                hardwareManager.showCameraControls()
+                _uiEvent.send(UiEvent.ShowMessage("Camera controls available"))
+            } else {
+                _uiEvent.send(UiEvent.ShowMessage("Device owner required for camera controls"))
+            }
+        }
+    }
+
+    fun showMicrophoneSettings() {
+        viewModelScope.launch {
+            hardwareManager.showMicrophoneControls()
+            _uiEvent.send(UiEvent.ShowMessage("Microphone controls"))
+        }
+    }
+
+    fun showDisplaySettings() {
+        viewModelScope.launch {
+            hardwareManager.openDisplaySettings()
+            _uiEvent.send(UiEvent.ShowMessage("Opening display settings"))
+        }
+    }
+
+    fun showVolumeSettings() {
+        viewModelScope.launch {
+            hardwareManager.openVolumeSettings()
+            _uiEvent.send(UiEvent.ShowMessage("Opening volume settings"))
+        }
+    }
+
+    fun showFlashlightSettings() {
+        viewModelScope.launch {
+            hardwareManager.toggleFlashlight()
+            _uiEvent.send(UiEvent.ShowMessage("Flashlight toggled"))
+        }
+    }
+
+    fun showBatteryOptimizationSettings() {
+        viewModelScope.launch {
+            if (xiaomiManager.isMIUIDevice()) {
+                xiaomiManager.openBatteryOptimizationSettings()
+                _uiEvent.send(UiEvent.ShowMessage("Opening MIUI battery optimization"))
+            } else {
+                hardwareManager.openBatteryOptimizationSettings()
+                _uiEvent.send(UiEvent.ShowMessage("Opening battery optimization"))
+            }
+        }
+    }
+
+    fun showAutostartSettings() {
+        viewModelScope.launch {
+            if (xiaomiManager.isMIUIDevice()) {
+                xiaomiManager.openAutostartSettings()
+                _uiEvent.send(UiEvent.ShowMessage("Opening MIUI autostart settings"))
+            } else {
+                _uiEvent.send(UiEvent.ShowMessage("Autostart settings"))
+            }
+        }
+    }
+
+    fun showGameTurboSettings() {
+        viewModelScope.launch {
+            if (xiaomiManager.isMIUIDevice()) {
+                xiaomiManager.openGameTurboSettings()
+                _uiEvent.send(UiEvent.ShowMessage("Opening Game Turbo"))
+            } else {
+                _uiEvent.send(UiEvent.ShowMessage("Game Turbo not available"))
+            }
+        }
+    }
+
+    // System Management Functions
+    fun toggleAutoLaunchOnBoot() {
+        viewModelScope.launch {
+            if (isDeviceOwner(context)) {
+                // Enable auto launch on boot
+                _uiEvent.send(UiEvent.ShowMessage("Auto launch on boot enabled"))
+                // TODO: Implement auto launch logic
+            } else {
+                _uiEvent.send(UiEvent.ShowMessage("Device owner required"))
+            }
+        }
+    }
+
+    fun setAsDefaultLauncher() {
+        viewModelScope.launch {
+            _uiEvent.send(UiEvent.ShowMessage("Setting as default launcher..."))
+            // This will open launcher picker
+            val homeScreenSettings = nu.brandrisk.kioskmode.domain.HomeScreenSettings()
+            homeScreenSettings.showSelectHomeScreen(context)
+        }
+    }
+
+    fun showBootAnimationSettings() {
+        viewModelScope.launch {
+            _uiEvent.send(UiEvent.ShowMessage("Boot animation settings"))
+            // TODO: Implement boot animation customization
+        }
+    }
+
+    fun toggleStatusBarVisibility() {
+        viewModelScope.launch {
+            if (isDeviceOwner(context)) {
+                securityManager.toggleStatusBar()
+                _uiEvent.send(UiEvent.ShowMessage("Status bar visibility toggled"))
+            } else {
+                _uiEvent.send(UiEvent.ShowMessage("Device owner required to hide status bar"))
+            }
+        }
+    }
+
+    fun toggleNavigationBarVisibility() {
+        viewModelScope.launch {
+            if (isDeviceOwner(context)) {
+                securityManager.toggleNavigationBar()
+                _uiEvent.send(UiEvent.ShowMessage("Navigation bar visibility toggled"))
+            } else {
+                _uiEvent.send(UiEvent.ShowMessage("Device owner required"))
+            }
+        }
+    }
+
+    fun toggleImmersiveMode() {
+        viewModelScope.launch {
+            securityManager.toggleImmersiveMode()
+            _uiEvent.send(UiEvent.ShowMessage("Immersive mode toggled"))
+        }
+    }
+
+    fun showOrientationSettings() {
+        viewModelScope.launch {
+            hardwareManager.openOrientationSettings()
+            _uiEvent.send(UiEvent.ShowMessage("Screen orientation settings"))
+        }
+    }
+
+    fun showCPUGovernorSettings() {
+        viewModelScope.launch {
+            _uiEvent.send(UiEvent.ShowMessage("CPU governor settings (root required)"))
+            // TODO: Implement CPU governor if root available
+        }
+    }
+
+    fun showRAMManagementSettings() {
+        viewModelScope.launch {
+            hardwareManager.openMemorySettings()
+            _uiEvent.send(UiEvent.ShowMessage("RAM management settings"))
+        }
+    }
+
+    fun showThermalSettings() {
+        viewModelScope.launch {
+            _uiEvent.send(UiEvent.ShowMessage("Thermal management settings"))
+            // TODO: Implement thermal settings
+        }
+    }
+
+    fun removeDeviceOwner() {
+        viewModelScope.launch {
+            try {
+                val devicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+                val adminComponent = android.content.ComponentName(context, nu.brandrisk.kioskmode.KioskDeviceAdminReceiver::class.java)
+
+                if (devicePolicyManager.isDeviceOwnerApp(context.packageName)) {
+                    // Clear device owner
+                    devicePolicyManager.clearDeviceOwnerApp(context.packageName)
+                    _uiEvent.send(UiEvent.ShowMessage("Device owner removed successfully!"))
+                } else {
+                    _uiEvent.send(UiEvent.ShowMessage("Not a device owner"))
+                }
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Failed to remove device owner: ${e.message}"))
+            }
+        }
+    }
 }
 
 // Data classes for enterprise settings
