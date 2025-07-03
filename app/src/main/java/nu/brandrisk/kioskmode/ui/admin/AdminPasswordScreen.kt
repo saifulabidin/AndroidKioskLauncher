@@ -1,5 +1,6 @@
 package nu.brandrisk.kioskmode.ui.admin
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -235,7 +236,9 @@ fun AdminPasswordScreen(
                                     isLoading = true
                                     viewModel.verifyPassword(password) { success ->
                                         isLoading = false
-                                        if (!success) {
+                                        if (success) {
+                                            navController.navigate(Routes.CONFIG)
+                                        } else {
                                             password = ""
                                         }
                                     }
@@ -259,6 +262,24 @@ fun AdminPasswordScreen(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("Access Admin Panel", color = Color.White)
                             }
+                        }
+                        
+                        // Change Password Button
+                        Spacer(modifier = Modifier.height(12.dp))
+                        OutlinedButton(
+                            onClick = {
+                                navController.navigate(Routes.CHANGE_PASSWORD)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color.White
+                            ),
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(Icons.Default.Key, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Change Password")
                         }
                     }
                 }

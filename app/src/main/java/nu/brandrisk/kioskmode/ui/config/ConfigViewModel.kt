@@ -21,6 +21,7 @@ import nu.brandrisk.kioskmode.domain.enterprise.EnterpriseSecurityManager
 import nu.brandrisk.kioskmode.domain.enterprise.HardwareControlManager
 import nu.brandrisk.kioskmode.domain.enterprise.NetworkManager
 import nu.brandrisk.kioskmode.domain.enterprise.XiaomiMIUIManager
+import nu.brandrisk.kioskmode.domain.enterprise.EnterpriseBootManager
 import nu.brandrisk.kioskmode.utils.Routes
 import nu.brandrisk.kioskmode.utils.UiEvent
 import javax.inject.Inject
@@ -34,7 +35,8 @@ class ConfigViewModel @Inject constructor(
     private val securityManager: EnterpriseSecurityManager,
     private val networkManager: NetworkManager,
     private val hardwareManager: HardwareControlManager,
-    private val xiaomiManager: XiaomiMIUIManager
+    private val xiaomiManager: XiaomiMIUIManager,
+    private val bootManager: EnterpriseBootManager
 ) : ViewModel() {
 
     val apps = repository.getApps()
@@ -364,8 +366,7 @@ class ConfigViewModel @Inject constructor(
     // Security Management Functions
     fun showPasswordManager() {
         viewModelScope.launch {
-            _uiEvent.send(UiEvent.ShowMessage("Opening Password Manager..."))
-            // TODO: Implement password manager dialog
+            _uiEvent.send(UiEvent.Navigate(Routes.ADMIN_PASSWORD))
         }
     }
 
@@ -611,22 +612,35 @@ class ConfigViewModel @Inject constructor(
     // System Management Functions
     fun toggleAutoLaunchOnBoot() {
         viewModelScope.launch {
-            if (isDeviceOwner(context)) {
-                // Enable auto launch on boot
-                _uiEvent.send(UiEvent.ShowMessage("Auto launch on boot enabled"))
-                // TODO: Implement auto launch logic
-            } else {
-                _uiEvent.send(UiEvent.ShowMessage("Device owner required"))
+            try {
+                val currentStatus = bootManager.getAutoStartStatus()
+                if (currentStatus.isEnabled) {
+                    val success = bootManager.disableAutoStart()
+                    _uiEvent.send(UiEvent.ShowMessage(
+                        if (success) "Auto-start disabled" else "Failed to disable auto-start"
+                    ))
+                } else {
+                    val success = bootManager.enableAutoStart(
+                        startupMode = nu.brandrisk.kioskmode.domain.enterprise.EnterpriseBootManager.Companion.StartupMode.KIOSK_IMMEDIATE,
+                        bootDelayMs = 3000L,
+                        persistentMode = true
+                    )
+                    _uiEvent.send(UiEvent.ShowMessage(
+                        if (success) "Enterprise auto-start enabled" else "Device owner required for full functionality"
+                    ))
+                }
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Error: ${e.message}"))
             }
         }
     }
 
     fun setAsDefaultLauncher() {
         viewModelScope.launch {
-            _uiEvent.send(UiEvent.ShowMessage("Setting as default launcher..."))
-            // This will open launcher picker
-            val homeScreenSettings = nu.brandrisk.kioskmode.domain.HomeScreenSettings()
-            homeScreenSettings.showSelectHomeScreen(context)
+            val success = bootManager.setAsDefaultLauncher()
+            _uiEvent.send(UiEvent.ShowMessage(
+                if (success) "Set as default launcher" else "Please select this app as default launcher"
+            ))
         }
     }
 
@@ -722,6 +736,12 @@ class ConfigViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiEvent.send(UiEvent.ShowMessage("Failed to remove device owner: ${e.message}"))
             }
+        }
+    }
+
+    fun showBootConfigurationScreen() {
+        viewModelScope.launch {
+            _uiEvent.send(UiEvent.Navigate(Routes.BOOT_CONFIGURATION))
         }
     }
 }

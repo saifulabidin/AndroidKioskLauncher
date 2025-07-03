@@ -78,8 +78,17 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.CONFIG) {
                             ConfigView(navController = navController)
                         }
+                        composable(Routes.CHANGE_PASSWORD) {
+                            nu.brandrisk.kioskmode.ui.changepassword.ChangePasswordScreen(navController = navController)
+                        }
                         composable(Routes.ADB_SETUP) {
                             AdbSetupView()
+                        }
+                        composable(Routes.CHANGE_PASSWORD) {
+                            nu.brandrisk.kioskmode.ui.admin.ChangePasswordScreen(navController = navController)
+                        }
+                        composable(Routes.BOOT_CONFIGURATION) {
+                            nu.brandrisk.kioskmode.ui.bootconfig.BootConfigurationScreen(navController = navController)
                         }
                     }
                 }

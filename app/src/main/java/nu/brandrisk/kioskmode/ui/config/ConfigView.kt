@@ -535,8 +535,8 @@ private fun SystemManagementTab(
                     Text("🚀 Boot & Launcher", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    SystemOptionItem("Auto Launch on Boot", "Start launcher automatically", Icons.Default.Power) {
-                        viewModel.toggleAutoLaunchOnBoot()
+                    SystemOptionItem("Enterprise Auto-Start", "Advanced boot configuration", Icons.Default.Power) {
+                        viewModel.showBootConfigurationScreen()
                     }
                     SystemOptionItem("Set as Default Launcher", "Make this the default home app", Icons.Default.Home) {
                         viewModel.setAsDefaultLauncher()

@@ -106,19 +106,17 @@ class AdminPasswordManager @Inject constructor(
     }
     
     /**
-     * Change admin password
+     * Change admin password (with current password verification)
      * Returns true if password was changed successfully
      */
-    suspend fun changePassword(oldPassword: String, newPassword: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun changePassword(currentPassword: String, newPassword: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            if (!verifyPassword(oldPassword)) {
+            // Verify current password first
+            if (!verifyPassword(currentPassword)) {
                 return@withContext false
             }
             
-            if (newPassword.length < 4) {
-                return@withContext false // Minimum 4 characters
-            }
-            
+            // Set new password
             setPassword(newPassword, isDefault = false)
             true
         } catch (e: Exception) {
@@ -127,22 +125,27 @@ class AdminPasswordManager @Inject constructor(
     }
     
     /**
-     * Force reset password to default (emergency function)
-     * Only available through specific admin procedures
+     * Reset password to default (0000)
      */
     suspend fun resetToDefault(): Boolean = withContext(Dispatchers.IO) {
         try {
-            setPassword(DEFAULT_PASSWORD, isDefault = true)
+            val salt = generateSalt()
+            val hash = hashPassword(DEFAULT_PASSWORD, salt)
+            
             sharedPreferences.edit()
-                .putInt(KEY_ATTEMPT_COUNT, 0)
-                .putLong(KEY_LOCKOUT_TIME, 0)
+                .putString(KEY_PASSWORD_HASH, hash)
+                .putString(KEY_PASSWORD_SALT, salt)
+                .putBoolean(KEY_IS_DEFAULT, true)
+                .putInt(KEY_ATTEMPT_COUNT, 0) // Reset failed attempts
+                .putLong(KEY_LOCKOUT_TIME, 0) // Clear lockout
                 .apply()
+            
             true
         } catch (e: Exception) {
             false
         }
     }
-    
+
     /**
      * Check if using default password
      */
