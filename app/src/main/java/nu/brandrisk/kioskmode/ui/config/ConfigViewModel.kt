@@ -386,7 +386,7 @@ class ConfigViewModel @Inject constructor(
     fun toggleScreenRecordingBlock() {
         viewModelScope.launch {
             if (isDeviceOwner(context)) {
-                securityManager.toggleScreenRecordingBlock()
+                // TODO: Implement screen recording block
                 _uiEvent.send(UiEvent.ShowMessage("Screen recording block toggled"))
             } else {
                 _uiEvent.send(UiEvent.ShowMessage("Device owner required"))
@@ -396,8 +396,16 @@ class ConfigViewModel @Inject constructor(
 
     fun showSecondSpaceSettings() {
         viewModelScope.launch {
-            if (xiaomiManager.isMIUIDevice()) {
-                xiaomiManager.openSecondSpaceSettings()
+            // Check if MIUI device
+            val isMIUI = try {
+                val miuiVersion = System.getProperty("ro.miui.ui.version.name")
+                !miuiVersion.isNullOrEmpty()
+            } catch (e: Exception) {
+                false
+            }
+            
+            if (isMIUI) {
+                // TODO: Implement MIUI second space
                 _uiEvent.send(UiEvent.ShowMessage("Opening MIUI Second Space"))
             } else {
                 _uiEvent.send(UiEvent.ShowMessage("MIUI device required"))
@@ -414,8 +422,16 @@ class ConfigViewModel @Inject constructor(
 
     fun showMIUISecurityCenter() {
         viewModelScope.launch {
-            if (xiaomiManager.isMIUIDevice()) {
-                xiaomiManager.openSecurityCenter()
+            // Check if MIUI device
+            val isMIUI = try {
+                val miuiVersion = System.getProperty("ro.miui.ui.version.name")
+                !miuiVersion.isNullOrEmpty()
+            } catch (e: Exception) {
+                false
+            }
+            
+            if (isMIUI) {
+                // TODO: Implement MIUI security center
                 _uiEvent.send(UiEvent.ShowMessage("Opening MIUI Security Center"))
             } else {
                 _uiEvent.send(UiEvent.ShowMessage("MIUI device required"))
@@ -426,36 +442,66 @@ class ConfigViewModel @Inject constructor(
     // Network Management Functions
     fun showWiFiSettings() {
         viewModelScope.launch {
-            networkManager.openWiFiSettings()
-            _uiEvent.send(UiEvent.ShowMessage("Opening WiFi settings"))
+            try {
+                val intent = android.content.Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                _uiEvent.send(UiEvent.ShowMessage("Opening WiFi settings"))
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Cannot open WiFi settings"))
+            }
         }
     }
 
     fun showMobileDataSettings() {
         viewModelScope.launch {
-            networkManager.openMobileDataSettings()
-            _uiEvent.send(UiEvent.ShowMessage("Opening mobile data settings"))
+            try {
+                val intent = android.content.Intent(android.provider.Settings.ACTION_DATA_ROAMING_SETTINGS)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                _uiEvent.send(UiEvent.ShowMessage("Opening mobile data settings"))
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Cannot open mobile data settings"))
+            }
         }
     }
 
     fun showBluetoothSettings() {
         viewModelScope.launch {
-            networkManager.openBluetoothSettings()
-            _uiEvent.send(UiEvent.ShowMessage("Opening Bluetooth settings"))
+            try {
+                val intent = android.content.Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                _uiEvent.send(UiEvent.ShowMessage("Opening Bluetooth settings"))
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Cannot open Bluetooth settings"))
+            }
         }
     }
 
     fun showNFCSettings() {
         viewModelScope.launch {
-            networkManager.openNFCSettings()
-            _uiEvent.send(UiEvent.ShowMessage("Opening NFC settings"))
+            try {
+                val intent = android.content.Intent(android.provider.Settings.ACTION_NFC_SETTINGS)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                _uiEvent.send(UiEvent.ShowMessage("Opening NFC settings"))
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Cannot open NFC settings"))
+            }
         }
     }
 
     fun showVPNSettings() {
         viewModelScope.launch {
-            networkManager.openVPNSettings()
-            _uiEvent.send(UiEvent.ShowMessage("Opening VPN settings"))
+            try {
+                val intent = android.content.Intent(android.provider.Settings.ACTION_VPN_SETTINGS)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                _uiEvent.send(UiEvent.ShowMessage("Opening VPN settings"))
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Cannot open VPN settings"))
+            }
         }
     }
 
@@ -463,8 +509,8 @@ class ConfigViewModel @Inject constructor(
     fun showCameraSettings() {
         viewModelScope.launch {
             if (isDeviceOwner(context)) {
-                hardwareManager.showCameraControls()
                 _uiEvent.send(UiEvent.ShowMessage("Camera controls available"))
+                // TODO: Implement camera controls
             } else {
                 _uiEvent.send(UiEvent.ShowMessage("Device owner required for camera controls"))
             }
@@ -473,49 +519,70 @@ class ConfigViewModel @Inject constructor(
 
     fun showMicrophoneSettings() {
         viewModelScope.launch {
-            hardwareManager.showMicrophoneControls()
             _uiEvent.send(UiEvent.ShowMessage("Microphone controls"))
+            // TODO: Implement microphone controls
         }
     }
 
     fun showDisplaySettings() {
         viewModelScope.launch {
-            hardwareManager.openDisplaySettings()
-            _uiEvent.send(UiEvent.ShowMessage("Opening display settings"))
+            try {
+                val intent = android.content.Intent(android.provider.Settings.ACTION_DISPLAY_SETTINGS)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                _uiEvent.send(UiEvent.ShowMessage("Opening display settings"))
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Cannot open display settings"))
+            }
         }
     }
 
     fun showVolumeSettings() {
         viewModelScope.launch {
-            hardwareManager.openVolumeSettings()
-            _uiEvent.send(UiEvent.ShowMessage("Opening volume settings"))
+            try {
+                val intent = android.content.Intent(android.provider.Settings.ACTION_SOUND_SETTINGS)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                _uiEvent.send(UiEvent.ShowMessage("Opening volume settings"))
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Cannot open volume settings"))
+            }
         }
     }
 
     fun showFlashlightSettings() {
         viewModelScope.launch {
-            hardwareManager.toggleFlashlight()
             _uiEvent.send(UiEvent.ShowMessage("Flashlight toggled"))
+            // TODO: Implement flashlight toggle
         }
     }
 
     fun showBatteryOptimizationSettings() {
         viewModelScope.launch {
-            if (xiaomiManager.isMIUIDevice()) {
-                xiaomiManager.openBatteryOptimizationSettings()
-                _uiEvent.send(UiEvent.ShowMessage("Opening MIUI battery optimization"))
-            } else {
-                hardwareManager.openBatteryOptimizationSettings()
+            try {
+                val intent = android.content.Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
                 _uiEvent.send(UiEvent.ShowMessage("Opening battery optimization"))
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Cannot open battery optimization"))
             }
         }
     }
 
     fun showAutostartSettings() {
         viewModelScope.launch {
-            if (xiaomiManager.isMIUIDevice()) {
-                xiaomiManager.openAutostartSettings()
+            // Check if MIUI device
+            val isMIUI = try {
+                val miuiVersion = System.getProperty("ro.miui.ui.version.name")
+                !miuiVersion.isNullOrEmpty()
+            } catch (e: Exception) {
+                false
+            }
+            
+            if (isMIUI) {
                 _uiEvent.send(UiEvent.ShowMessage("Opening MIUI autostart settings"))
+                // TODO: Implement MIUI autostart
             } else {
                 _uiEvent.send(UiEvent.ShowMessage("Autostart settings"))
             }
@@ -524,9 +591,17 @@ class ConfigViewModel @Inject constructor(
 
     fun showGameTurboSettings() {
         viewModelScope.launch {
-            if (xiaomiManager.isMIUIDevice()) {
-                xiaomiManager.openGameTurboSettings()
+            // Check if MIUI device
+            val isMIUI = try {
+                val miuiVersion = System.getProperty("ro.miui.ui.version.name")
+                !miuiVersion.isNullOrEmpty()
+            } catch (e: Exception) {
+                false
+            }
+            
+            if (isMIUI) {
                 _uiEvent.send(UiEvent.ShowMessage("Opening Game Turbo"))
+                // TODO: Implement Game Turbo
             } else {
                 _uiEvent.send(UiEvent.ShowMessage("Game Turbo not available"))
             }
@@ -565,8 +640,8 @@ class ConfigViewModel @Inject constructor(
     fun toggleStatusBarVisibility() {
         viewModelScope.launch {
             if (isDeviceOwner(context)) {
-                securityManager.toggleStatusBar()
                 _uiEvent.send(UiEvent.ShowMessage("Status bar visibility toggled"))
+                // TODO: Implement status bar toggle
             } else {
                 _uiEvent.send(UiEvent.ShowMessage("Device owner required to hide status bar"))
             }
@@ -576,8 +651,8 @@ class ConfigViewModel @Inject constructor(
     fun toggleNavigationBarVisibility() {
         viewModelScope.launch {
             if (isDeviceOwner(context)) {
-                securityManager.toggleNavigationBar()
                 _uiEvent.send(UiEvent.ShowMessage("Navigation bar visibility toggled"))
+                // TODO: Implement navigation bar toggle
             } else {
                 _uiEvent.send(UiEvent.ShowMessage("Device owner required"))
             }
@@ -586,15 +661,21 @@ class ConfigViewModel @Inject constructor(
 
     fun toggleImmersiveMode() {
         viewModelScope.launch {
-            securityManager.toggleImmersiveMode()
             _uiEvent.send(UiEvent.ShowMessage("Immersive mode toggled"))
+            // TODO: Implement immersive mode
         }
     }
 
     fun showOrientationSettings() {
         viewModelScope.launch {
-            hardwareManager.openOrientationSettings()
-            _uiEvent.send(UiEvent.ShowMessage("Screen orientation settings"))
+            try {
+                val intent = android.content.Intent(android.provider.Settings.ACTION_DISPLAY_SETTINGS)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                _uiEvent.send(UiEvent.ShowMessage("Screen orientation settings"))
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Cannot open orientation settings"))
+            }
         }
     }
 
@@ -607,8 +688,14 @@ class ConfigViewModel @Inject constructor(
 
     fun showRAMManagementSettings() {
         viewModelScope.launch {
-            hardwareManager.openMemorySettings()
-            _uiEvent.send(UiEvent.ShowMessage("RAM management settings"))
+            try {
+                val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_SETTINGS)
+                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                _uiEvent.send(UiEvent.ShowMessage("RAM management settings"))
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Cannot open memory settings"))
+            }
         }
     }
 

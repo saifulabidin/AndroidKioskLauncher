@@ -509,7 +509,6 @@ private fun NetworkOptionItem(title: String, description: String, icon: androidx
 private fun HardwareOptionItem(title: String, description: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).clickable { onClick() },
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
