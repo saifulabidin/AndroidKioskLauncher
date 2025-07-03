@@ -400,7 +400,7 @@ class XiaomiMIUIManager @Inject constructor(
 
     private fun getMIUIVersion(): String {
         return try {
-            System.getProperty("ro.miui.ui.version.name", "Unknown")
+            System.getProperty("ro.miui.ui.version.name", "Unknown") ?: "Unknown"
         } catch (e: Exception) {
             "Unknown"
         }

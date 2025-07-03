@@ -69,6 +69,9 @@ class SecurityEventReceiver : BroadcastReceiver() {
                 KioskLogger.i(TAG, "Password attempt succeeded")
                 handlePasswordSucceeded(context)
             }
+            else -> {
+                KioskLogger.w(TAG, "Unhandled security event: ${intent.action}")
+            }
         }
     }
 

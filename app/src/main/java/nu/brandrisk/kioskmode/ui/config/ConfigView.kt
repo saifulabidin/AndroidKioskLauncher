@@ -401,7 +401,7 @@ private fun HardwareManagementTab(
                     HardwareOptionItem("Camera", "Control camera access", Icons.Default.PhotoCamera)
                     HardwareOptionItem("Microphone", "Audio recording controls", Icons.Default.Mic)
                     HardwareOptionItem("Display", "Brightness and rotation", Icons.Default.Settings)
-                    HardwareOptionItem("Volume", "System audio controls", Icons.Default.VolumeUp)
+                    HardwareOptionItem("Volume", "System audio controls", Icons.AutoMirrored.Filled.VolumeUp)
                     HardwareOptionItem("Flashlight", "LED torch control", Icons.Default.FlashOn)
                 }
             }

@@ -7,8 +7,11 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -37,8 +40,10 @@ class MainActivity : ComponentActivity() {
         // Initialize enterprise services
         initializeEnterpriseServices()
 
-        lifecycleScope.launchWhenStarted {
-            appRepository.refreshApps()
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                appRepository.refreshApps()
+            }
         }
 
         setContent {

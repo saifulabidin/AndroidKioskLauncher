@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,7 +37,6 @@ fun AdminPasswordScreen(
     navController: NavController,
     viewModel: AdminPasswordViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
     val focusRequester = remember { FocusRequester() }
     
     var password by remember { mutableStateOf("") }
@@ -256,7 +254,7 @@ fun AdminPasswordScreen(
                                     strokeWidth = 2.dp
                                 )
                             } else {
-                                Icon(Icons.Default.Login, contentDescription = null)
+                                Icon(Icons.AutoMirrored.Filled.Login, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("Access Admin Panel", color = Color.White)
                             }
@@ -271,7 +269,7 @@ fun AdminPasswordScreen(
                     onClick = { navController.navigateUp() }
                 ) {
                     Icon(
-                        Icons.Default.ArrowBack,
+                        Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
                         tint = Color.White.copy(alpha = 0.7f)
                     )
