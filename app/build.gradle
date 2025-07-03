@@ -73,6 +73,10 @@ android {
     }
     
     lint {
+          baseline = file("lint-baseline.xml")
+      }
+
+    lint {
         disable 'QueryAllPackagesPermission'
     }
 }

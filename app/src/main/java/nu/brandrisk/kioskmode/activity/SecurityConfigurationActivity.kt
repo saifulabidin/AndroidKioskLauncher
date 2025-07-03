@@ -32,9 +32,15 @@ class SecurityConfigurationActivity : Activity() {
         devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         adminComponent = ComponentName(this, KioskDeviceAdminReceiver::class.java)
         
+        // Prevent force close if intent or action is null
+        val action = intent?.action
+        if (action == null) {
+            KioskLogger.e(TAG, "No action provided to SecurityConfigurationActivity")
+            finish()
+            return
+        }
+
         // Handle security configuration based on intent action
-        val action = intent.action
-        
         when (action) {
             "ENABLE_DEVICE_ADMIN" -> enableDeviceAdmin()
             "CONFIGURE_SECURITY_POLICIES" -> configureSecurityPolicies()
