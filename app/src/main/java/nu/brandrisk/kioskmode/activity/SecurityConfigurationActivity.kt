@@ -1,5 +1,6 @@
 package nu.brandrisk.kioskmode.activity
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
@@ -67,6 +68,7 @@ class SecurityConfigurationActivity : Activity() {
         }
     }
     
+    @SuppressLint("NewApi", "MissingPermission", "DeprecatedDeviceAdmin")
     private fun configureSecurityPolicies() {
         if (devicePolicyManager.isDeviceOwnerApp(packageName)) {
             try {
