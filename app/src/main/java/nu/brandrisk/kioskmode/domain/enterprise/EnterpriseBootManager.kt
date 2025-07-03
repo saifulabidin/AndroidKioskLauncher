@@ -382,6 +382,8 @@ class EnterpriseBootManager @Inject constructor(
                         bootDelayMs = status.bootDelay,
                         persistentMode = status.isPersistent
                     )
+                } else {
+                    android.util.Log.i("EnterpriseBootManager", "Auto-start is not enabled, skipping reconfiguration")
                 }
             } catch (e: Exception) {
                 android.util.Log.e("EnterpriseBootManager", "Error re-configuring after app update", e)
