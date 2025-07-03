@@ -9,11 +9,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import nu.brandrisk.kioskmode.data.model.App
 import nu.brandrisk.kioskmode.domain.AppRepository
 import nu.brandrisk.kioskmode.domain.ToggleKioskMode
+import nu.brandrisk.kioskmode.domain.enterprise.EnterpriseSecurityManager
+import nu.brandrisk.kioskmode.domain.enterprise.HardwareControlManager
+import nu.brandrisk.kioskmode.domain.enterprise.NetworkManager
+import nu.brandrisk.kioskmode.domain.enterprise.XiaomiMIUIManager
 import nu.brandrisk.kioskmode.utils.Routes
 import nu.brandrisk.kioskmode.utils.UiEvent
 import javax.inject.Inject
@@ -24,7 +30,11 @@ open class ConfigViewModel @Inject constructor(
     internal val toggleKioskMode: ToggleKioskMode,
     private val repository: AppRepository,
     @ApplicationContext private val context: Context,
-    val imageLoader: ImageLoader
+    val imageLoader: ImageLoader,
+    private val securityManager: EnterpriseSecurityManager,
+    private val networkManager: NetworkManager,
+    private val hardwareManager: HardwareControlManager,
+    private val xiaomiManager: XiaomiMIUIManager
 ) : ViewModel() {
 
     val apps = repository.getApps()
@@ -32,6 +42,24 @@ open class ConfigViewModel @Inject constructor(
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
+    // Enterprise feature states
+    private val _securitySettings = MutableStateFlow(SecuritySettings())
+    val securitySettings: StateFlow<SecuritySettings> = _securitySettings
+
+    private val _networkSettings = MutableStateFlow(NetworkSettings())
+    val networkSettings: StateFlow<NetworkSettings> = _networkSettings
+
+    private val _hardwareSettings = MutableStateFlow(HardwareSettings())
+    val hardwareSettings: StateFlow<HardwareSettings> = _hardwareSettings
+
+    private val _xiaomiSettings = MutableStateFlow(XiaomiSettings())
+    val xiaomiSettings: StateFlow<XiaomiSettings> = _xiaomiSettings
+
+    init {
+        loadEnterpriseSettings()
+    }
+
+    // Existing methods
     fun enableKioskMode(context: Context) {
         val result = toggleKioskMode.enableKioskMode(context)
         if (result == ToggleKioskMode.Result.NotDeviceOwner) {
@@ -76,4 +104,209 @@ open class ConfigViewModel @Inject constructor(
             repository.enableAllApps()
         }
     }
+
+    // New Enterprise Security Methods
+    fun togglePasswordProtection(enabled: Boolean) {
+        viewModelScope.launch {
+            val result = securityManager.setPasswordProtection(enabled)
+            _securitySettings.value = _securitySettings.value.copy(passwordProtectionEnabled = result)
+        }
+    }
+
+    fun toggleBiometricLock(enabled: Boolean) {
+        viewModelScope.launch {
+            val result = securityManager.setBiometricLock(enabled)
+            _securitySettings.value = _securitySettings.value.copy(biometricLockEnabled = result)
+        }
+    }
+
+    fun setSessionTimeout(minutes: Int) {
+        viewModelScope.launch {
+            securityManager.setSessionTimeout(minutes)
+            _securitySettings.value = _securitySettings.value.copy(sessionTimeoutMinutes = minutes)
+        }
+    }
+
+    fun toggleScreenRecordingBlock(enabled: Boolean) {
+        viewModelScope.launch {
+            val result = securityManager.blockScreenRecording(enabled)
+            _securitySettings.value = _securitySettings.value.copy(screenRecordingBlocked = result)
+        }
+    }
+
+    // Network Management Methods
+    fun configureEnterpriseWiFi(ssid: String, password: String, security: String) {
+        viewModelScope.launch {
+            val result = networkManager.configureWiFi(ssid, password, security)
+            _networkSettings.value = _networkSettings.value.copy(wifiConfigured = result)
+        }
+    }
+
+    fun toggleMobileData(enabled: Boolean) {
+        viewModelScope.launch {
+            val result = networkManager.setMobileDataEnabled(enabled)
+            _networkSettings.value = _networkSettings.value.copy(mobileDataEnabled = result)
+        }
+    }
+
+    fun toggleBluetooth(enabled: Boolean) {
+        viewModelScope.launch {
+            val result = networkManager.setBluetoothEnabled(enabled)
+            _networkSettings.value = _networkSettings.value.copy(bluetoothEnabled = result)
+        }
+    }
+
+    fun toggleNFC(enabled: Boolean) {
+        viewModelScope.launch {
+            val result = networkManager.setNFCEnabled(enabled)
+            _networkSettings.value = _networkSettings.value.copy(nfcEnabled = result)
+        }
+    }
+
+    fun configureVPN(serverAddress: String, username: String, password: String) {
+        viewModelScope.launch {
+            val result = networkManager.configureVPN(serverAddress, username, password)
+            _networkSettings.value = _networkSettings.value.copy(vpnConfigured = result)
+        }
+    }
+
+    // Hardware Control Methods
+    fun toggleCameraAccess(enabled: Boolean) {
+        viewModelScope.launch {
+            val result = hardwareManager.setCameraEnabled(enabled)
+            _hardwareSettings.value = _hardwareSettings.value.copy(cameraEnabled = result)
+        }
+    }
+
+    fun toggleMicrophoneAccess(enabled: Boolean) {
+        viewModelScope.launch {
+            val result = hardwareManager.setMicrophoneEnabled(enabled)
+            _hardwareSettings.value = _hardwareSettings.value.copy(microphoneEnabled = result)
+        }
+    }
+
+    fun setBrightness(level: Int) {
+        viewModelScope.launch {
+            hardwareManager.setBrightness(level)
+            _hardwareSettings.value = _hardwareSettings.value.copy(brightnessLevel = level)
+        }
+    }
+
+    fun setVolumeLevel(level: Int) {
+        viewModelScope.launch {
+            hardwareManager.setVolumeLevel(level)
+            _hardwareSettings.value = _hardwareSettings.value.copy(volumeLevel = level)
+        }
+    }
+
+    fun toggleFlashlight(enabled: Boolean) {
+        viewModelScope.launch {
+            val result = hardwareManager.setFlashlightEnabled(enabled)
+            _hardwareSettings.value = _hardwareSettings.value.copy(flashlightEnabled = result)
+        }
+    }
+
+    // Xiaomi MIUI-Specific Methods
+    fun enableSecondSpace() {
+        viewModelScope.launch {
+            val result = xiaomiManager.enableSecondSpace()
+            _xiaomiSettings.value = _xiaomiSettings.value.copy(secondSpaceEnabled = result)
+        }
+    }
+
+    fun addToBatteryWhitelist() {
+        viewModelScope.launch {
+            val result = xiaomiManager.addToBatteryWhitelist(context.packageName)
+            _xiaomiSettings.value = _xiaomiSettings.value.copy(batteryWhitelisted = result)
+        }
+    }
+
+    fun requestAutostartPermission() {
+        viewModelScope.launch {
+            val result = xiaomiManager.requestAutostartPermission()
+            _xiaomiSettings.value = _xiaomiSettings.value.copy(autostartEnabled = result)
+        }
+    }
+
+    fun enableGameTurboMode() {
+        viewModelScope.launch {
+            val result = xiaomiManager.enableGameTurboMode()
+            _xiaomiSettings.value = _xiaomiSettings.value.copy(gameTurboEnabled = result)
+        }
+    }
+
+    fun bypassAppLock(packageName: String) {
+        viewModelScope.launch {
+            val result = xiaomiManager.bypassAppLock(packageName)
+            _xiaomiSettings.value = _xiaomiSettings.value.copy(appLockBypassed = result)
+        }
+    }
+
+    private fun loadEnterpriseSettings() {
+        viewModelScope.launch {
+            // Load current settings from managers
+            _securitySettings.value = SecuritySettings(
+                passwordProtectionEnabled = securityManager.isPasswordProtectionEnabled(),
+                biometricLockEnabled = securityManager.isBiometricLockEnabled(),
+                sessionTimeoutMinutes = securityManager.getSessionTimeoutMinutes(),
+                screenRecordingBlocked = securityManager.isScreenRecordingBlocked()
+            )
+
+            _networkSettings.value = NetworkSettings(
+                wifiConfigured = networkManager.isWiFiConfigured(),
+                mobileDataEnabled = networkManager.isMobileDataEnabled(),
+                bluetoothEnabled = networkManager.isBluetoothEnabled(),
+                nfcEnabled = networkManager.isNFCEnabled(),
+                vpnConfigured = networkManager.isVPNConfigured()
+            )
+
+            _hardwareSettings.value = HardwareSettings(
+                cameraEnabled = hardwareManager.isCameraEnabled(),
+                microphoneEnabled = hardwareManager.isMicrophoneEnabled(),
+                brightnessLevel = hardwareManager.getBrightnessLevel(),
+                volumeLevel = hardwareManager.getVolumeLevel(),
+                flashlightEnabled = hardwareManager.isFlashlightEnabled()
+            )
+
+            _xiaomiSettings.value = XiaomiSettings(
+                secondSpaceEnabled = xiaomiManager.isSecondSpaceEnabled(),
+                batteryWhitelisted = xiaomiManager.isBatteryWhitelisted(context.packageName),
+                autostartEnabled = xiaomiManager.isAutostartEnabled(),
+                gameTurboEnabled = xiaomiManager.isGameTurboEnabled(),
+                appLockBypassed = xiaomiManager.isAppLockBypassed()
+            )
+        }
+    }
 }
+
+// Data classes for enterprise settings
+data class SecuritySettings(
+    val passwordProtectionEnabled: Boolean = false,
+    val biometricLockEnabled: Boolean = false,
+    val sessionTimeoutMinutes: Int = 30,
+    val screenRecordingBlocked: Boolean = false
+)
+
+data class NetworkSettings(
+    val wifiConfigured: Boolean = false,
+    val mobileDataEnabled: Boolean = true,
+    val bluetoothEnabled: Boolean = true,
+    val nfcEnabled: Boolean = true,
+    val vpnConfigured: Boolean = false
+)
+
+data class HardwareSettings(
+    val cameraEnabled: Boolean = true,
+    val microphoneEnabled: Boolean = true,
+    val brightnessLevel: Int = 50,
+    val volumeLevel: Int = 50,
+    val flashlightEnabled: Boolean = false
+)
+
+data class XiaomiSettings(
+    val secondSpaceEnabled: Boolean = false,
+    val batteryWhitelisted: Boolean = false,
+    val autostartEnabled: Boolean = false,
+    val gameTurboEnabled: Boolean = false,
+    val appLockBypassed: Boolean = false
+)

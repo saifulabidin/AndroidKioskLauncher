@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Enterprise Color Palette -->
+    <color name="enterprise_primary">#2E3440</color>
+    <color name="enterprise_primary_variant">#1B1F2A</color>
+    <color name="enterprise_on_primary">#FFFFFF</color>
+    <color name="enterprise_secondary">#5E81AC</color>
+    <color name="enterprise_secondary_variant">#4C6A8A</color>
+    <color name="enterprise_on_secondary">#FFFFFF</color>
+    <color name="enterprise_background">#ECEFF4</color>
+    <color name="enterprise_surface">#FFFFFF</color>
+    <color name="enterprise_on_surface">#2E3440</color>
+    
+    <!-- Security Color Palette -->
+    <color name="security_primary">#D32F2F</color>
+    <color name="security_error">#B71C1C</color>
+    <color name="security_background">#FFEBEE</color>
+    <color name="security_warning">#FF9800</color>
+    <color name="security_success">#4CAF50</color>
+    
+    <!-- Kiosk Mode Colors -->
+    <color name="kiosk_primary">#1976D2</color>
+    <color name="kiosk_background">#F5F5F5</color>
+    <color name="kiosk_surface">#FFFFFF</color>
+    
+    <!-- Status Colors -->
+    <color name="status_active">#4CAF50</color>
+    <color name="status_inactive">#9E9E9E</color>
+    <color name="status_warning">#FF9800</color>
+    <color name="status_error">#F44336</color>
+</resources>

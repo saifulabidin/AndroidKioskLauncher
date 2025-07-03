@@ -14,4 +14,33 @@
     <string name="enable_all_apps">Enable all apps</string>
     <string name="disable_all_apps">Disable all apps</string>
 
+    <!-- Enterprise Accessibility Service -->
+    <string name="accessibility_service_description">Enterprise Kiosk Accessibility Service - Provides advanced system control and monitoring capabilities for enterprise kiosk mode. This service enables comprehensive device management, security enforcement, and user interface control.</string>
+    
+    <!-- Enterprise Notification Service -->
+    <string name="notification_service_description">Enterprise Notification Control Service - Manages and filters notifications in kiosk mode to ensure secure and controlled user experience.</string>
+    
+    <!-- Enterprise VPN Service -->
+    <string name="vpn_service_description">Enterprise VPN Service - Provides secure network tunneling and traffic control for enterprise kiosk devices.</string>
+    
+    <!-- Enterprise Security -->
+    <string name="security_violation_detected">Security violation detected</string>
+    <string name="unauthorized_app_blocked">Unauthorized application blocked</string>
+    <string name="kiosk_mode_enforced">Kiosk mode enforced</string>
+    <string name="enterprise_monitoring_active">Enterprise monitoring active</string>
+    
+    <!-- Service Notifications -->
+    <string name="enterprise_service_running">Enterprise Kiosk Service Running</string>
+    <string name="kiosk_enforcement_active">Kiosk enforcement is active and monitoring</string>
+    
+    <!-- Device Admin -->
+    <string name="device_admin_description">Enterprise Device Administrator - Provides advanced device management capabilities including security policy enforcement, remote control, and system configuration management.</string>
+    
+    <!-- Permission Descriptions -->
+    <string name="permission_usage_stats">Required for monitoring application usage</string>
+    <string name="permission_system_alert">Required for system overlay control</string>
+    <string name="permission_device_admin">Required for device administration</string>
+    <string name="permission_accessibility">Required for system UI control</string>
+    <string name="permission_notification_access">Required for notification management</string>
+
 </resources>

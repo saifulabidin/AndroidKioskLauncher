@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <device-admin>
     <uses-policies>
-        <limit-password />
-        <watch-login />
-        <reset-password />
+        <!-- Core Security Policies -->
         <force-lock />
-        <wipe-data />
-        <expire-password />
         <encrypted-storage />
+        <limit-password />
+        <reset-password />
+        <expire-password />
         <disable-camera />
+        <watch-login />
+        <wipe-data />
+        
+        <!-- Advanced Enterprise Features -->
         <disable-keyguard-features />
     </uses-policies>
+    
+    <!-- Enterprise Device Ownership Transfer Support -->
+    <support-transfer-ownership />
 </device-admin>

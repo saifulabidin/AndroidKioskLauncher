@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Transparent Theme for Overlay Activities -->
+    <style name="Theme.Transparent" parent="@android:style/Theme.Translucent.NoTitleBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
+    <!-- Enterprise Activity Themes -->
+    <style name="Theme.Enterprise" parent="Theme.KioskMode">
+        <item name="android:colorPrimary">@color/enterprise_primary</item>
+        <item name="android:statusBarColor">@color/enterprise_primary</item>
+        <item name="android:navigationBarColor">@color/enterprise_primary</item>
+        <item name="android:windowBackground">@color/enterprise_background</item>
+    </style>
+
+    <!-- Kiosk Mode Full Screen Theme -->
+    <style name="Theme.KioskMode.FullScreen" parent="Theme.KioskMode">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <!-- Security Configuration Theme -->
+    <style name="Theme.Security" parent="Theme.KioskMode">
+        <item name="android:colorPrimary">@color/security_primary</item>
+        <item name="android:windowBackground">@color/security_background</item>
+    </style>
+
+    <!-- Empty Activity Theme for Transparent Activities -->
+    <style name="Theme.EmptyActivity" parent="@android:style/Theme.NoTitleBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+</resources>
