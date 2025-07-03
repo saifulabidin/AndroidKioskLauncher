@@ -7,47 +7,47 @@ plugins {
 }
 
 android {
-    namespace 'nu.brandrisk.kioskmode'
-    compileSdk 34
+    namespace = 'nu.brandrisk.kioskmode'
+    compileSdk = 34
 
     defaultConfig {
-        applicationId "nu.brandrisk.kioskmode"
-        minSdk 28
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        applicationId = "nu.brandrisk.kioskmode"
+        minSdk = 28
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
-            useSupportLibrary true
+            useSupportLibrary = true
         }
     }
 
     signingConfigs {
         release {
-            storeFile file("../my-release-key.jks") // path relatif dari app/
-            storePassword 'Sabidzpro12345$'
-            keyAlias 'my-key-alias'
-            keyPassword 'Sabidzpro12345$'
+            storeFile = file("../my-release-key.jks") // path relatif dari app/
+            storePassword = 'Sabidzpro12345$'
+            keyAlias = 'my-key-alias'
+            keyPassword = 'Sabidzpro12345$'
         }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig = signingConfigs.release
+            minifyEnabled = false
+            proguardFiles(getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro')
         }
         debug {
             // Optional: bisa signed juga, atau biarkan default
-            minifyEnabled false
-            debuggable true
+            minifyEnabled = false
+            debuggable = true
         }
     }
     
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     
     kotlinOptions {
@@ -55,11 +55,11 @@ android {
     }
     
     buildFeatures {
-        compose true
+        compose = true
     }
     
     composeOptions {
-        kotlinCompilerExtensionVersion compose_version
+        kotlinCompilerExtensionVersion = compose_version
     }
     
     packagingOptions {
@@ -73,8 +73,8 @@ android {
     }
     
     lint {
-          baseline = file("lint-baseline.xml")
-      }
+        baseline = file("lint-baseline.xml")
+    }
 
     lint {
         disable 'QueryAllPackagesPermission'
@@ -82,7 +82,7 @@ android {
 }
 
 kapt {
-    correctErrorTypes true
+    correctErrorTypes = true
     arguments {
         arg("room.schemaLocation", "$projectDir/schemas")
     }
