@@ -29,7 +29,7 @@ class AdminPasswordManager @Inject constructor(
         private const val KEY_ATTEMPT_COUNT = "failed_attempts"
         private const val KEY_LOCKOUT_TIME = "lockout_until"
         
-        private const val DEFAULT_PASSWORD = "0000"
+        private const val DEFAULT_PASSWORD = "1234"
         private const val MAX_ATTEMPTS = 5
         private const val LOCKOUT_DURATION_MS = 30 * 60 * 1000L // 30 minutes
     }
@@ -74,6 +74,11 @@ class AdminPasswordManager @Inject constructor(
      */
     suspend fun verifyPassword(inputPassword: String): Boolean = withContext(Dispatchers.IO) {
         try {
+            // Initialize password if not set
+            if (!isPasswordSet()) {
+                initializeAdminPassword()
+            }
+            
             // Check if currently locked out
             if (isLockedOut()) {
                 return@withContext false
@@ -83,7 +88,9 @@ class AdminPasswordManager @Inject constructor(
             val storedSalt = sharedPreferences.getString(KEY_PASSWORD_SALT, null)
             
             if (storedHash == null || storedSalt == null) {
-                return@withContext false
+                // Try to initialize again
+                initializeAdminPassword()
+                return@withContext inputPassword == DEFAULT_PASSWORD
             }
             
             val inputHash = hashPassword(inputPassword, storedSalt)
@@ -101,7 +108,8 @@ class AdminPasswordManager @Inject constructor(
             
             isCorrect
         } catch (e: Exception) {
-            false
+            // Fallback: check against default password
+            inputPassword == DEFAULT_PASSWORD
         }
     }
     
@@ -111,8 +119,18 @@ class AdminPasswordManager @Inject constructor(
      */
     suspend fun changePassword(currentPassword: String, newPassword: String): Boolean = withContext(Dispatchers.IO) {
         try {
+            // Initialize password if not set
+            if (!isPasswordSet()) {
+                initializeAdminPassword()
+            }
+            
             // Verify current password first
             if (!verifyPassword(currentPassword)) {
+                return@withContext false
+            }
+            
+            // Validate new password length
+            if (newPassword.length < 4) {
                 return@withContext false
             }
             
@@ -125,7 +143,7 @@ class AdminPasswordManager @Inject constructor(
     }
     
     /**
-     * Reset password to default (0000)
+     * Reset password to default (1234)
      */
     suspend fun resetToDefault(): Boolean = withContext(Dispatchers.IO) {
         try {

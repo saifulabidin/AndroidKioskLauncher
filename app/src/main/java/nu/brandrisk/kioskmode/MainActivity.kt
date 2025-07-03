@@ -30,6 +30,7 @@ import nu.brandrisk.kioskmode.ui.theme.KioskModeTheme
 import nu.brandrisk.kioskmode.utils.Routes
 import androidx.core.content.ContextCompat
 import androidx.core.app.ActivityCompat
+import nu.brandrisk.kioskmode.domain.security.AdminPasswordManager
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -37,6 +38,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var appRepository: AppRepository
+
+    @Inject
+    lateinit var adminPasswordManager: AdminPasswordManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,6 +103,9 @@ class MainActivity : ComponentActivity() {
     private fun initializeEnterpriseServices() {
         lifecycleScope.launch {
             try {
+                // Initialize admin password system first
+                adminPasswordManager.initializeAdminPassword()
+                
                 // Start enhanced enterprise monitoring service
                 val intent = Intent(this@MainActivity, EnhancedEnterpriseKioskService::class.java)
                 startForegroundService(intent)

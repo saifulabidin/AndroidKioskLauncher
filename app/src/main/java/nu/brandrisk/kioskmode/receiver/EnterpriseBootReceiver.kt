@@ -60,6 +60,9 @@ class EnterpriseBootReceiver : BroadcastReceiver() {
                 val success = bootManager.executeEnterpriseStartup()
                 KioskLogger.i(TAG, "Enterprise startup result: $success")
                 
+                // AUTO-ENABLE KIOSK MODE AFTER BOOT
+                autoEnableKioskMode(context)
+                
                 if (!success) {
                     // Fallback: Start basic services
                     startFallbackServices(context)
@@ -67,6 +70,9 @@ class EnterpriseBootReceiver : BroadcastReceiver() {
             } catch (e: Exception) {
                 KioskLogger.e(TAG, "Enterprise startup failed", e)
                 startFallbackServices(context)
+                
+                // Still try to auto-enable kiosk mode even if startup failed
+                autoEnableKioskMode(context)
             } finally {
                 pendingResult.finish()
             }
@@ -176,6 +182,54 @@ class EnterpriseBootReceiver : BroadcastReceiver() {
 
         } catch (e: Exception) {
             KioskLogger.e(TAG, "Error launching kiosk app", e)
+        }
+    }
+
+    /**
+     * Auto-enable kiosk mode after boot if device is device owner
+     */
+    private fun autoEnableKioskMode(context: Context) {
+        try {
+            val devicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as android.app.admin.DevicePolicyManager
+            
+            // Check if we are device owner
+            if (devicePolicyManager.isDeviceOwnerApp(context.packageName)) {
+                KioskLogger.i(TAG, "Device is device owner - auto-enabling kiosk mode")
+                
+                // Enable kiosk mode automatically
+                val adminComponent = ComponentName(context, nu.brandrisk.kioskmode.KioskDeviceAdminReceiver::class.java)
+                
+                // Set lock task packages for all apps
+                val packages = context.packageManager.getInstalledApplications(android.content.pm.PackageManager.GET_META_DATA)
+                    .map { it.packageName }
+                    .toTypedArray()
+                
+                devicePolicyManager.setLockTaskPackages(adminComponent, packages)
+                
+                // Set as persistent preferred activity (home launcher)
+                val intentFilter = android.content.IntentFilter().apply {
+                    addAction(Intent.ACTION_MAIN)
+                    addCategory(Intent.CATEGORY_HOME)
+                    addCategory(Intent.CATEGORY_DEFAULT)
+                }
+                
+                val launcherComponent = ComponentName(context, nu.brandrisk.kioskmode.MainActivity::class.java)
+                devicePolicyManager.addPersistentPreferredActivity(
+                    adminComponent,
+                    intentFilter,
+                    launcherComponent
+                )
+                
+                KioskLogger.i(TAG, "Kiosk mode auto-enabled successfully")
+                
+                // Launch the kiosk app
+                launchKioskApp(context)
+                
+            } else {
+                KioskLogger.w(TAG, "Device is not device owner - cannot auto-enable kiosk mode")
+            }
+        } catch (e: Exception) {
+            KioskLogger.e(TAG, "Failed to auto-enable kiosk mode", e)
         }
     }
 }
