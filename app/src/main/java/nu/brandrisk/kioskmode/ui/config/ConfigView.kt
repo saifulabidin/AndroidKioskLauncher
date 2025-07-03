@@ -324,7 +324,7 @@ private fun AppsManagementTab(
 
 @Composable
 private fun SecurityManagementTab(
-    viewModel: ConfigViewModel
+    @Suppress("UNUSED_PARAMETER") viewModel: ConfigViewModel
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -361,7 +361,7 @@ private fun SecurityManagementTab(
 
 @Composable
 private fun NetworkManagementTab(
-    viewModel: ConfigViewModel
+    @Suppress("UNUSED_PARAMETER") viewModel: ConfigViewModel
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -401,7 +401,7 @@ private fun HardwareManagementTab(
                     HardwareOptionItem("Camera", "Control camera access", Icons.Default.PhotoCamera)
                     HardwareOptionItem("Microphone", "Audio recording controls", Icons.Default.Mic)
                     HardwareOptionItem("Display", "Brightness and rotation", Icons.Default.Settings)
-                    HardwareOptionItem("Volume", "System audio controls", Icons.Default.VolumeUp)
+                    HardwareOptionItem("Volume", "System audio controls", Icons.Default.VolumeOff)
                     HardwareOptionItem("Flashlight", "LED torch control", Icons.Default.FlashOn)
                 }
             }
@@ -434,7 +434,7 @@ private fun SecurityOptionItem(title: String, description: String, icon: android
             Text(title, fontWeight = FontWeight.Medium)
             Text(description, fontSize = 12.sp, color = Color.Gray)
         }
-        Icon(Icons.Default.ArrowForward, contentDescription = null)
+        Icon(Icons.Default.ChevronRight, contentDescription = null)
     }
 }
 
@@ -450,7 +450,7 @@ private fun NetworkOptionItem(title: String, description: String, icon: androidx
             Text(title, fontWeight = FontWeight.Medium)
             Text(description, fontSize = 12.sp, color = Color.Gray)
         }
-        Icon(Icons.Default.ArrowForward, contentDescription = null)
+        Icon(Icons.Default.ChevronRight, contentDescription = null)
     }
 }
 
@@ -466,7 +466,7 @@ private fun HardwareOptionItem(title: String, description: String, icon: android
             Text(title, fontWeight = FontWeight.Medium)
             Text(description, fontSize = 12.sp, color = Color.Gray)
         }
-        Icon(Icons.Default.ArrowForward, contentDescription = null)
+        Icon(Icons.Default.ChevronRight, contentDescription = null)
     }
 }
 
