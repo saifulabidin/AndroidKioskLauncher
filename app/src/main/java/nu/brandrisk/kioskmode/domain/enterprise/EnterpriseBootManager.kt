@@ -320,8 +320,14 @@ class EnterpriseBootManager @Inject constructor(
     
     fun getBootDelay(): Long = sharedPreferences.getLong(KEY_BOOT_DELAY_MS, DEFAULT_BOOT_DELAY)
     
-    fun isPersistentModeEnabled(): Boolean = sharedPreferences.getBoolean(KEY_PERSISTENT_MODE, false)
-    
+    fun isPersistentModeEnabled(): Boolean {
+        return if (isDeviceOwner()) {
+            sharedPreferences.getBoolean(KEY_PERSISTENT_MODE, false)
+        } else {
+            false
+        }
+    }
+
     private fun isDeviceOwner(): Boolean {
         return devicePolicyManager.isDeviceOwnerApp(context.packageName)
     }
@@ -349,6 +355,38 @@ class EnterpriseBootManager @Inject constructor(
         val state = packageManager.getComponentEnabledSetting(component)
         return state == PackageManager.COMPONENT_ENABLED_STATE_ENABLED ||
                 state == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
+    }
+    
+    fun launchKioskApp() {
+        try {
+            val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            launchIntent?.apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                context.startActivity(this)
+            }
+            android.util.Log.i("EnterpriseBootManager", "Launched kiosk app")
+        } catch (e: Exception) {
+            android.util.Log.e("EnterpriseBootManager", "Error launching kiosk app", e)
+        }
+    }
+
+    suspend fun handleAppUpdate() {
+        withContext(Dispatchers.IO) {
+            try {
+                android.util.Log.i("EnterpriseBootManager", "Enterprise app updated - re-configuring auto-start")
+                // Re-enable auto-start after app update
+                val status = getAutoStartStatus()
+                if (status.isEnabled) {
+                    enableAutoStart(
+                        startupMode = status.startupMode,
+                        bootDelayMs = status.bootDelay,
+                        persistentMode = status.isPersistent
+                    )
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("EnterpriseBootManager", "Error re-configuring after app update", e)
+            }
+        }
     }
 }
 

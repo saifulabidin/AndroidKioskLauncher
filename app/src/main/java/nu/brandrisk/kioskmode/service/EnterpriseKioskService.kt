@@ -213,13 +213,24 @@ class EnterpriseKioskService : Service() {
     
     private suspend fun monitorActiveApplications() {
         val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val runningTasks = activityManager.getRunningTasks(1)
-        
-        if (runningTasks.isNotEmpty()) {
-            val topActivity = runningTasks[0].topActivity
-            
-            if (topActivity != null && !isAllowedApplication(topActivity)) {
-                KioskLogger.w(TAG, "Unauthorized app detected: ${topActivity.packageName}")
+    
+        @Suppress("DEPRECATION")
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            val runningTasks = activityManager.getRunningTasks(1)
+            if (runningTasks.isNotEmpty()) {
+                val topActivity = runningTasks[0].topActivity
+                if (topActivity != null && !isAllowedApplication(topActivity)) {
+                    KioskLogger.w(TAG, "Unauthorized app detected: ${topActivity.packageName}")
+                    kioskEnforcer.redirectToKioskApp()
+                }
+            }
+        } else {
+            // For API 21+, use running app processes as a fallback (less accurate)
+            val runningAppProcesses = activityManager.runningAppProcesses
+            val foregroundProcess = runningAppProcesses?.firstOrNull { it.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND }
+            val packageName = foregroundProcess?.pkgList?.firstOrNull()
+            if (packageName != null && !isAllowedApplication(ComponentName(packageName, ""))) {
+                KioskLogger.w(TAG, "Unauthorized app detected: $packageName")
                 kioskEnforcer.redirectToKioskApp()
             }
         }

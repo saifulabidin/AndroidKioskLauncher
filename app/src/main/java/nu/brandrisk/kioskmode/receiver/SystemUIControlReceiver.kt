@@ -55,7 +55,7 @@ class SystemUIControlReceiver : BroadcastReceiver() {
             
             Intent.ACTION_SCREEN_OFF -> {
                 KioskLogger.i(TAG, "Screen turned off")
-                handleScreenOff(context)
+                handleScreenOff()
             }
             
             Intent.ACTION_USER_PRESENT -> {
@@ -160,7 +160,7 @@ class SystemUIControlReceiver : BroadcastReceiver() {
         disableStatusBar(context)
     }
 
-    private fun handleScreenOff(context: Context) {
+    private fun handleScreenOff() {
         // Handle screen off event
         KioskLogger.i(TAG, "Handling screen off event")
     }
@@ -173,14 +173,21 @@ class SystemUIControlReceiver : BroadcastReceiver() {
             
             // Launch kiosk app if not already active
             val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
-            val runningTasks = activityManager.getRunningTasks(1)
-            
+
             var isKioskAppActive = false
-            if (runningTasks.isNotEmpty()) {
-                val topActivity = runningTasks[0].topActivity
-                isKioskAppActive = topActivity?.packageName == context.packageName
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP) {
+                val runningTasks = activityManager.getRunningTasks(1)
+                if (runningTasks.isNotEmpty()) {
+                    val topActivity = runningTasks[0].topActivity
+                    isKioskAppActive = topActivity?.packageName == context.packageName
+                }
+            } else {
+                val runningAppProcesses = activityManager.runningAppProcesses
+                val foregroundProcess = runningAppProcesses?.firstOrNull { it.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND }
+                val packageName = foregroundProcess?.pkgList?.firstOrNull()
+                isKioskAppActive = packageName == context.packageName
             }
-            
+
             if (!isKioskAppActive) {
                 KioskLogger.i(TAG, "Kiosk app not active, launching...")
                 val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)

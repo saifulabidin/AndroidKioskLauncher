@@ -703,10 +703,8 @@ class ConfigViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val devicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-                val adminComponent = android.content.ComponentName(context, nu.brandrisk.kioskmode.KioskDeviceAdminReceiver::class.java)
 
                 if (devicePolicyManager.isDeviceOwnerApp(context.packageName)) {
-                    // Clear device owner
                     devicePolicyManager.clearDeviceOwnerApp(context.packageName)
                     _uiEvent.send(UiEvent.ShowMessage("Device owner removed successfully!"))
                 } else {
