@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -275,6 +276,160 @@ open class ConfigViewModel @Inject constructor(
                 gameTurboEnabled = xiaomiManager.isGameTurboEnabled(),
                 appLockBypassed = xiaomiManager.isAppLockBypassed()
             )
+        }
+    }
+
+    // Enhanced App Management Methods
+    fun toggleSystemApps() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentApps = repository.getApps().first()
+            val systemApps = currentApps.filter { isSystemApp(it.packageName) }
+            val shouldEnable = systemApps.any { !it.isEnabled }
+            
+            systemApps.forEach { app ->
+                repository.upsertApp(app.copy(isEnabled = shouldEnable))
+            }
+        }
+    }
+
+    fun toggleUserApps() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentApps = repository.getApps().first()
+            val userApps = currentApps.filter { !isSystemApp(it.packageName) }
+            val shouldEnable = userApps.any { !it.isEnabled }
+            
+            userApps.forEach { app ->
+                repository.upsertApp(app.copy(isEnabled = shouldEnable))
+            }
+        }
+    }
+
+    // Enterprise Policy Presets
+    fun applyWhitelistPolicy() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentApps = repository.getApps().first()
+            val whitelistedPackages = listOf(
+                "com.android.chrome",
+                "com.android.vending", // Play Store
+                "com.google.android.apps.docs", // Google Drive
+                "com.microsoft.office.word",
+                "com.microsoft.office.excel",
+                "com.microsoft.office.powerpoint",
+                "com.adobe.reader"
+            )
+            
+            currentApps.forEach { app ->
+                val shouldEnable = whitelistedPackages.contains(app.packageName) || 
+                                 app.packageName == context.packageName
+                repository.upsertApp(app.copy(isEnabled = shouldEnable))
+            }
+        }
+    }
+
+    fun applyEducationPolicy() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentApps = repository.getApps().first()
+            val educationPackages = listOf(
+                "com.android.chrome",
+                "com.google.android.apps.classroom",
+                "com.google.android.apps.docs",
+                "com.microsoft.office.word",
+                "org.khanacademy.android",
+                "com.duolingo",
+                "com.wolfram.android.alpha",
+                "com.adobe.reader"
+            )
+            
+            currentApps.forEach { app ->
+                val shouldEnable = educationPackages.contains(app.packageName) || 
+                                 app.packageName == context.packageName ||
+                                 isEducationalApp(app.packageName)
+                repository.upsertApp(app.copy(isEnabled = shouldEnable))
+            }
+        }
+    }
+
+    fun applyKioskPolicy() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentApps = repository.getApps().first()
+            // Only allow launcher and one specified app
+            currentApps.forEach { app ->
+                val shouldEnable = app.packageName == context.packageName
+                repository.upsertApp(app.copy(isEnabled = shouldEnable))
+            }
+        }
+    }
+
+    fun applyBusinessPolicy() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentApps = repository.getApps().first()
+            val businessPackages = listOf(
+                "com.android.chrome",
+                "com.microsoft.teams",
+                "com.slack",
+                "com.zoom.us",
+                "com.google.android.apps.meetings",
+                "com.microsoft.office.word",
+                "com.microsoft.office.excel",
+                "com.microsoft.office.powerpoint",
+                "com.microsoft.office.outlook",
+                "com.dropbox.android",
+                "com.adobe.reader"
+            )
+            
+            currentApps.forEach { app ->
+                val shouldEnable = businessPackages.contains(app.packageName) || 
+                                 app.packageName == context.packageName ||
+                                 isBusinessApp(app.packageName)
+                repository.upsertApp(app.copy(isEnabled = shouldEnable))
+            }
+        }
+    }
+
+    // Helper methods for app categorization
+    private fun isSystemApp(packageName: String): Boolean {
+        return try {
+            val packageInfo = context.packageManager.getPackageInfo(packageName, 0)
+            (packageInfo.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun isEducationalApp(packageName: String): Boolean {
+        val educationalKeywords = listOf("edu", "learn", "study", "school", "math", "science")
+        return educationalKeywords.any { packageName.contains(it, ignoreCase = true) }
+    }
+
+    private fun isBusinessApp(packageName: String): Boolean {
+        val businessKeywords = listOf("office", "work", "business", "enterprise", "corp")
+        return businessKeywords.any { packageName.contains(it, ignoreCase = true) }
+    }
+
+    // App search functionality
+    fun searchApps(query: String): Flow<List<App>> {
+        return repository.getApps().map { apps ->
+            if (query.isBlank()) {
+                apps
+            } else {
+                apps.filter { app ->
+                    app.label.contains(query, ignoreCase = true) ||
+                    app.packageName.contains(query, ignoreCase = true)
+                }
+            }
+        }
+    }
+
+    // App export/import functionality (similar to SureLock)
+    fun exportAppList(): String {
+        // Export enabled apps list as JSON or CSV
+        return "Export functionality to be implemented"
+    }
+
+    fun importAppList(data: String) {
+        // Import app configuration from file
+        viewModelScope.launch {
+            // Implementation for importing app configurations
         }
     }
 }

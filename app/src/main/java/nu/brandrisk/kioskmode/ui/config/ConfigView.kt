@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import nu.brandrisk.kioskmode.R
 import nu.brandrisk.kioskmode.domain.HomeScreenSettings
 import nu.brandrisk.kioskmode.ui.shared.AppIconItem
@@ -125,6 +127,27 @@ private fun AppsManagementTab(
     context: android.content.Context,
     launcher: androidx.activity.compose.ManagedActivityResultLauncher<android.content.Intent, androidx.activity.result.ActivityResult>
 ) {
+    // Filter states
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedFilter by remember { mutableStateOf("all") } // all, enabled, disabled
+    
+    // Filtered apps
+    val filteredApps = remember(apps, searchQuery, selectedFilter) {
+        apps.filter { app ->
+            val matchesSearch = if (searchQuery.isBlank()) true else {
+                app.label.contains(searchQuery, ignoreCase = true) ||
+                app.packageName.contains(searchQuery, ignoreCase = true)
+            }
+            
+            val matchesFilter = when (selectedFilter) {
+                "enabled" -> app.isEnabled
+                "disabled" -> !app.isEnabled
+                else -> true
+            }
+            
+            matchesSearch && matchesFilter
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Adaptive(120.dp),
         modifier = Modifier.fillMaxSize(),
@@ -235,13 +258,149 @@ private fun AppsManagementTab(
                     text = "📱 ${stringResource(R.string.enable_disable_apps)} (${apps.filter { it.isEnabled }.size}/${apps.size} enabled)",
                     fontWeight = FontWeight.Bold
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Enhanced App Filtering
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("🔍 App Filtering & Search", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Search functionality
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            label = { Text("Search apps...") },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Filter buttons
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            FilterChip(
+                                onClick = { selectedFilter = "all" },
+                                label = { Text("All (${apps.size})") },
+                                selected = selectedFilter == "all"
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            FilterChip(
+                                onClick = { selectedFilter = "enabled" },
+                                label = { Text("Enabled (${apps.count { it.isEnabled }})") },
+                                selected = selectedFilter == "enabled"
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            FilterChip(
+                                onClick = { selectedFilter = "disabled" },
+                                label = { Text("Disabled (${apps.count { !it.isEnabled }})") },
+                                selected = selectedFilter == "disabled"
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Category-based Management
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("📂 Category Management", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        val systemApps = apps.filter { isSystemApp(it.packageName, context) }
+                        val userApps = apps.filter { !isSystemApp(it.packageName, context) }
+                        
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Button(
+                                onClick = { 
+                                    // Enable/disable all system apps
+                                    viewModel.toggleSystemApps()
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF2196F3))
+                            ) {
+                                Icon(Icons.Default.Settings, contentDescription = null)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("System Apps (${systemApps.size})")
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Button(
+                                onClick = { 
+                                    // Enable/disable all user apps
+                                    viewModel.toggleUserApps()
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF9C27B0))
+                            ) {
+                                Icon(Icons.Default.Person, contentDescription = null)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("User Apps (${userApps.size})")
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Enterprise App Policies
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("🏢 Enterprise Policies", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        LazyRow(modifier = Modifier.fillMaxWidth()) {
+                            item {
+                                Button(
+                                    onClick = { viewModel.applyWhitelistPolicy() },
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF4CAF50))
+                                ) {
+                                    Text("Apply Whitelist")
+                                }
+                            }
+                            item { Spacer(modifier = Modifier.width(8.dp)) }
+                            item {
+                                Button(
+                                    onClick = { viewModel.applyEducationPolicy() },
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF2196F3))
+                                ) {
+                                    Text("Education Mode")
+                                }
+                            }
+                            item { Spacer(modifier = Modifier.width(8.dp)) }
+                            item {
+                                Button(
+                                    onClick = { viewModel.applyKioskPolicy() },
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE94560))
+                                ) {
+                                    Text("Kiosk Mode")
+                                }
+                            }
+                            item { Spacer(modifier = Modifier.width(8.dp)) }
+                            item {
+                                Button(
+                                    onClick = { viewModel.applyBusinessPolicy() },
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF607D8B))
+                                ) {
+                                    Text("Business Mode")
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        items(apps) { app ->
-            AppIconItem(modifier = Modifier.clickable {
-                viewModel.updateEnabledFlag(app)
-            }, app, imageLoader)
+        items(filteredApps) { app ->
+            EnhancedAppIconItem(
+                app = app,
+                imageLoader = imageLoader,
+                isSystemApp = isSystemApp(app.packageName, context),
+                onToggle = { viewModel.updateEnabledFlag(app) }
+            )
         }
     }
 }
@@ -410,5 +569,92 @@ private fun HardwareOptionItem(title: String, description: String, icon: android
             Text(description, fontSize = 12.sp, color = Color.Gray)
         }
         Icon(Icons.Default.ChevronRight, contentDescription = null)
+    }
+}
+
+/**
+ * Helper function to check if an app is a system app
+ */
+private fun isSystemApp(packageName: String, context: Context): Boolean {
+    return try {
+        val packageInfo = context.packageManager.getPackageInfo(packageName, 0)
+        (packageInfo.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+    } catch (e: Exception) {
+        false
+    }
+}
+
+/**
+ * Enhanced App Icon with status indicators
+ */
+@Composable
+private fun EnhancedAppIconItem(
+    app: nu.brandrisk.kioskmode.data.model.App,
+    imageLoader: coil.ImageLoader,
+    isSystemApp: Boolean,
+    onToggle: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .padding(4.dp)
+            .size(120.dp)
+            .clickable { onToggle() },
+        elevation = if (app.isEnabled) 4.dp else 1.dp,
+        backgroundColor = if (app.isEnabled) Color.White else Color.Gray.copy(alpha = 0.5f)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(app.packageName)
+                        .transformations(CoilAppIconFetcher.AppIconTransformation())
+                        .build(),
+                    contentDescription = stringResource(R.string.icon_of_string, app.label),
+                    imageLoader = imageLoader,
+                    modifier = Modifier.size(48.dp)
+                )
+                
+                // Status indicators
+                if (isSystemApp) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "System App",
+                        modifier = Modifier
+                            .size(16.dp)
+                            .align(Alignment.TopEnd)
+                            .background(Color.Blue, CircleShape)
+                            .padding(2.dp),
+                        tint = Color.White
+                    )
+                }
+                
+                if (!app.isEnabled) {
+                    Icon(
+                        Icons.Default.Block,
+                        contentDescription = "Disabled",
+                        modifier = Modifier
+                            .size(16.dp)
+                            .align(Alignment.TopStart)
+                            .background(Color.Red, CircleShape)
+                            .padding(2.dp),
+                        tint = Color.White
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            Text(
+                text = app.label,
+                fontSize = 10.sp,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                color = if (app.isEnabled) Color.Black else Color.Gray
+            )
+        }
     }
 }

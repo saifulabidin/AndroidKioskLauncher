@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Enterprise Theme Colors -->
+    <color name="enterprise_primary">#E94560</color>
+    <color name="enterprise_primary_dark">#C63851</color>
+    <color name="enterprise_secondary">#2196F3</color>
+    <color name="enterprise_accent">#FF9800</color>
+    
+    <!-- Background Colors -->
+    <color name="enterprise_background_dark">#1A1A2E</color>
+    <color name="enterprise_background_medium">#16213E</color>
+    <color name="enterprise_background_light">#0F3460</color>
+    
+    <!-- Text Colors -->
+    <color name="enterprise_text_primary">#FFFFFF</color>
+    <color name="enterprise_text_secondary">#B0BEC5</color>
+    <color name="enterprise_text_hint">#78909C</color>
+    
+    <!-- Card Colors -->
+    <color name="enterprise_card_background">#FFFFFF</color>
+    <color name="enterprise_card_overlay">#40FFFFFF</color>
+    <color name="enterprise_card_border">#E0E0E0</color>
+    
+    <!-- Status Colors -->
+    <color name="enterprise_success">#4CAF50</color>
+    <color name="enterprise_warning">#FF9800</color>
+    <color name="enterprise_error">#F44336</color>
+    <color name="enterprise_info">#2196F3</color>
+    
+    <!-- Security Colors -->
+    <color name="enterprise_security_high">#FF5722</color>
+    <color name="enterprise_security_medium">#FF9800</color>
+    <color name="enterprise_security_low">#4CAF50</color>
+    
+    <!-- Network Colors -->
+    <color name="enterprise_network_connected">#4CAF50</color>
+    <color name="enterprise_network_disconnected">#F44336</color>
+    <color name="enterprise_network_limited">#FF9800</color>
+    
+    <!-- Button Colors -->
+    <color name="enterprise_button_primary">#E94560</color>
+    <color name="enterprise_button_secondary">#2196F3</color>
+    <color name="enterprise_button_success">#4CAF50</color>
+    <color name="enterprise_button_danger">#F44336</color>
+    
+    <!-- MIUI Colors -->
+    <color name="miui_orange">#FF6900</color>
+    <color name="miui_blue">#1976D2</color>
+    <color name="miui_green">#388E3C</color>
+    <color name="miui_red">#D32F2F</color>
+</resources>
