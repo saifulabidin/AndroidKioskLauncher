@@ -179,7 +179,7 @@
             android:name=".service.EnhancedEnterpriseKioskService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="systemExempted|mediaProjection|microphone" />
+            android:foregroundServiceType="systemExempted|mediaProjection" />
 
         <service
             android:name=".service.EnterpriseAccessibilityService"
