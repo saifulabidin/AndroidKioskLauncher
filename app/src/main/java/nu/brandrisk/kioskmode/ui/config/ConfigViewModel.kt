@@ -26,7 +26,7 @@ import nu.brandrisk.kioskmode.utils.UiEvent
 import javax.inject.Inject
 
 @HiltViewModel
-class ConfigViewModelNew @Inject constructor(
+class ConfigViewModel @Inject constructor(
     internal val toggleKioskMode: ToggleKioskMode,
     private val repository: AppRepository,
     @ApplicationContext private val context: Context,
@@ -334,12 +334,6 @@ class ConfigViewModelNew @Inject constructor(
     private fun isBusinessApp(packageName: String): Boolean {
         val businessKeywords = listOf("office", "work", "business", "enterprise", "corp")
         return businessKeywords.any { packageName.contains(it, ignoreCase = true) }
-    }
-
-    // App search functionality - Simplified
-    fun searchApps(@Suppress("UNUSED_PARAMETER") query: String): Flow<List<App>> {
-        // TODO: Implement proper search functionality
-        return repository.getApps()
     }
 
     // App export/import functionality (similar to SureLock)

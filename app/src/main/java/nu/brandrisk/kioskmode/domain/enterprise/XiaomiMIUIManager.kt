@@ -12,7 +12,13 @@ import javax.inject.Singleton
 
 /**
  * Xiaomi MIUI Manager
- * Handles Xiaomi-specific enterprise features
+ * Handle    private fun getMIUIVersion(): String {
+        return try {
+            android.os.SystemProperties.get("ro.miui.ui.version.name", "Unknown") ?: "Unknown"
+        } catch (e: Exception) {
+            "Unknown"
+        }
+    }i-specific enterprise features
  * Alternative to Samsung Knox for Xiaomi devices
  */
 @Singleton
@@ -236,7 +242,7 @@ class XiaomiMIUIManager @Inject constructor(
     // Helper methods
     private fun isMIUIDevice(): Boolean {
         return try {
-            val miuiVersion = android.os.SystemProperties.get("ro.miui.ui.version.name")
+            val miuiVersion = System.getProperty("ro.miui.ui.version.name")
             !miuiVersion.isNullOrEmpty()
         } catch (e: Exception) {
             // Fallback: Check for MIUI-specific system properties
@@ -278,7 +284,7 @@ class XiaomiMIUIManager @Inject constructor(
         }
     }
 
-    private fun openBatteryOptimizationSettings(packageName: String) {
+    private fun openBatteryOptimizationSettings(@Suppress("UNUSED_PARAMETER") packageName: String) {
         try {
             val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -351,7 +357,7 @@ class XiaomiMIUIManager @Inject constructor(
         }
     }
 
-    private fun checkBatteryWhitelistStatus(packageName: String): Boolean {
+    private fun checkBatteryWhitelistStatus(@Suppress("UNUSED_PARAMETER") packageName: String): Boolean {
         return try {
             // Check if app is in battery whitelist
             // This is a simplified check - actual implementation would vary
@@ -394,7 +400,7 @@ class XiaomiMIUIManager @Inject constructor(
 
     private fun getMIUIVersion(): String {
         return try {
-            android.os.SystemProperties.get("ro.miui.ui.version.name", "Unknown")
+            System.getProperty("ro.miui.ui.version.name", "Unknown")
         } catch (e: Exception) {
             "Unknown"
         }

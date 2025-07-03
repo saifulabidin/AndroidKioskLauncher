@@ -386,7 +386,7 @@ private fun NetworkManagementTab(
 
 @Composable
 private fun HardwareManagementTab(
-    viewModel: ConfigViewModel
+    @Suppress("UNUSED_PARAMETER") viewModel: ConfigViewModel
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -401,7 +401,7 @@ private fun HardwareManagementTab(
                     HardwareOptionItem("Camera", "Control camera access", Icons.Default.PhotoCamera)
                     HardwareOptionItem("Microphone", "Audio recording controls", Icons.Default.Mic)
                     HardwareOptionItem("Display", "Brightness and rotation", Icons.Default.Settings)
-                    HardwareOptionItem("Volume", "System audio controls", Icons.Default.VolumeOff)
+                    HardwareOptionItem("Volume", "System audio controls", Icons.Default.VolumeUp)
                     HardwareOptionItem("Flashlight", "LED torch control", Icons.Default.FlashOn)
                 }
             }

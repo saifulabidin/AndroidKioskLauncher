@@ -189,10 +189,10 @@ fun AdminPasswordScreen(
                         )
                         
                         // Error message
-                        if (uiState.errorMessage != null) {
+                        uiState.errorMessage?.let { errorMessage ->
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = uiState.errorMessage,
+                                text = errorMessage,
                                 color = MaterialTheme.colors.error,
                                 fontSize = 12.sp
                             )

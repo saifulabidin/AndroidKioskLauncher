@@ -66,7 +66,11 @@ class EnterpriseKioskService : Service() {
             "STOP_MONITORING" -> stopEnterpriseMonitoring()
             "ENFORCE_KIOSK" -> enforceKioskMode()
             "DISABLE_KIOSK" -> disableKioskMode()
-            "SECURITY_CHECK" -> performSecurityCheck()
+            "SECURITY_CHECK" -> {
+                CoroutineScope(Dispatchers.Default).launch {
+                    performSecurityCheck()
+                }
+            }
             else -> startEnterpriseMonitoring()
         }
         
@@ -89,9 +93,9 @@ class EnterpriseKioskService : Service() {
     }
     
     private fun initializeEnterpriseComponents() {
-        securityMonitor = SecurityMonitor(this)
-        kioskEnforcer = KioskEnforcer(this)
-        systemUIController = SystemUIController(this)
+        securityMonitor = SecurityMonitorImpl(this)
+        kioskEnforcer = KioskEnforcerImpl(this)
+        systemUIController = SystemUIControllerImpl(this)
     }
     
     private fun createNotificationChannel() {
@@ -121,7 +125,7 @@ class EnterpriseKioskService : Service() {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Enterprise Kiosk Active")
             .setContentText("Kiosk mode is enforced and monitoring")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setShowWhen(false)

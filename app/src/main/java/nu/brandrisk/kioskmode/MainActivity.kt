@@ -1,5 +1,6 @@
 package nu.brandrisk.kioskmode
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -77,7 +78,8 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             try {
                 // Start enhanced enterprise monitoring service
-                EnhancedEnterpriseKioskService.startMonitoring(this@MainActivity)
+                val intent = Intent(this@MainActivity, EnhancedEnterpriseKioskService::class.java)
+                startForegroundService(intent)
 
                 // Initialize enterprise features
                 initializeEnterpriseFeatures()
@@ -145,7 +147,7 @@ class MainActivity : ComponentActivity() {
 
     private fun isMIUIDevice(): Boolean {
         return try {
-            val miuiVersion = android.os.SystemProperties.get("ro.miui.ui.version.name")
+            val miuiVersion = System.getProperty("ro.miui.ui.version.name")
             !miuiVersion.isNullOrEmpty()
         } catch (e: Exception) {
             android.os.Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true) ||
@@ -158,6 +160,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         // Ensure enterprise monitoring is active
-        EnhancedEnterpriseKioskService.startMonitoring(this)
+        val intent = Intent(this, EnhancedEnterpriseKioskService::class.java)
+        startForegroundService(intent)
     }
 }

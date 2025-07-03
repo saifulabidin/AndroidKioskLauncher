@@ -2,6 +2,7 @@ package nu.brandrisk.kioskmode.service
 
 import android.app.*
 import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -52,6 +53,42 @@ class EnhancedEnterpriseKioskService : Service() {
         const val ACTION_STOP_MONITORING = "stop_enhanced_monitoring"
         const val ACTION_ENABLE_KIOSK = "enable_enhanced_kiosk"
         const val ACTION_DISABLE_KIOSK = "disable_enhanced_kiosk"
+        
+        fun startMonitoring(context: Context) {
+            val intent = Intent(context, EnhancedEnterpriseKioskService::class.java).apply {
+                action = ACTION_START_MONITORING
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+        }
+
+        fun stopMonitoring(context: Context) {
+            val intent = Intent(context, EnhancedEnterpriseKioskService::class.java).apply {
+                action = ACTION_STOP_MONITORING
+            }
+            context.startService(intent)
+        }
+
+        fun enableKioskMode(context: Context) {
+            val intent = Intent(context, EnhancedEnterpriseKioskService::class.java).apply {
+                action = ACTION_ENABLE_KIOSK
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+        }
+
+        fun disableKioskMode(context: Context) {
+            val intent = Intent(context, EnhancedEnterpriseKioskService::class.java).apply {
+                action = ACTION_DISABLE_KIOSK
+            }
+            context.startService(intent)
+        }
     }
 
     override fun onCreate() {
@@ -112,7 +149,7 @@ class EnhancedEnterpriseKioskService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("🏢 ${getString(R.string.enterprise_service_running)}")
             .setContentText(getString(R.string.professional_mode_active))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setShowWhen(false)
@@ -259,8 +296,9 @@ class EnhancedEnterpriseKioskService : Service() {
     private fun enableLockTaskMode() {
         if (isDeviceOwner()) {
             val allowedApps = getAllowedApps()
+            val adminComponent = ComponentName(this, "nu.brandrisk.kioskmode.KioskDeviceAdminReceiver")
             devicePolicyManager?.setLockTaskPackages(
-                applicationUtils.getComponentName(),
+                adminComponent,
                 allowedApps.toTypedArray()
             )
         }
@@ -268,8 +306,9 @@ class EnhancedEnterpriseKioskService : Service() {
 
     private fun disableLockTaskMode() {
         if (isDeviceOwner()) {
+            val adminComponent = ComponentName(this, "nu.brandrisk.kioskmode.KioskDeviceAdminReceiver")
             devicePolicyManager?.setLockTaskPackages(
-                applicationUtils.getComponentName(),
+                adminComponent,
                 emptyArray()
             )
         }
@@ -312,7 +351,13 @@ class EnhancedEnterpriseKioskService : Service() {
 
     private fun handleUnauthorizedApp(packageName: String) {
         if (isDeviceOwner()) {
-            applicationUtils.forceStopApp(packageName)
+            // Force stop the app using ActivityManager
+            try {
+                val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                activityManager.killBackgroundProcesses(packageName)
+            } catch (e: Exception) {
+                // Handle permission error
+            }
         }
         
         updateNotification("🚫 Blocked unauthorized app: $packageName")
@@ -322,7 +367,7 @@ class EnhancedEnterpriseKioskService : Service() {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("🏢 Enterprise Kiosk Active")
             .setContentText(message)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setOngoing(true)
             .setShowWhen(false)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -347,44 +392,4 @@ class EnhancedEnterpriseKioskService : Service() {
         return emptyList() // Simplified for now
     }
 
-    /**
-     * Public interface for controlling the service
-     */
-    companion object {
-        fun startMonitoring(context: Context) {
-            val intent = Intent(context, EnhancedEnterpriseKioskService::class.java).apply {
-                action = ACTION_START_MONITORING
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
-        }
-
-        fun stopMonitoring(context: Context) {
-            val intent = Intent(context, EnhancedEnterpriseKioskService::class.java).apply {
-                action = ACTION_STOP_MONITORING
-            }
-            context.startService(intent)
-        }
-
-        fun enableKioskMode(context: Context) {
-            val intent = Intent(context, EnhancedEnterpriseKioskService::class.java).apply {
-                action = ACTION_ENABLE_KIOSK
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
-        }
-
-        fun disableKioskMode(context: Context) {
-            val intent = Intent(context, EnhancedEnterpriseKioskService::class.java).apply {
-                action = ACTION_DISABLE_KIOSK
-            }
-            context.startService(intent)
-        }
-    }
 }
