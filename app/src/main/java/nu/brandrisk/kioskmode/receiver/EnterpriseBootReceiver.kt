@@ -116,54 +116,54 @@ class EnterpriseBootReceiver : BroadcastReceiver() {
                 try {
                     // Re-enable auto-start after app update
                     val status = bootManager.getAutoStartStatus()
-                if (status.isEnabled) {
-                    bootManager.enableAutoStart(
-                        startupMode = status.startupMode,
-                        bootDelayMs = status.bootDelay,
-                        persistentMode = status.isPersistent
-                    )
+                    if (status.isEnabled) {
+                        bootManager.enableAutoStart(
+                            startupMode = status.startupMode,
+                            bootDelayMs = status.bootDelay,
+                            persistentMode = status.isPersistent
+                        )
+                    }
+                    // Launch kiosk app if not already running
+                    launchKioskApp(context)
+                } catch (e: Exception) {
+                    KioskLogger.e(TAG, "Error enforcing kiosk after unlock", e)
                 }
-                // Launch kiosk app if not already running
-                launchKioskApp(context)
-            } catch (e: Exception) {
-                KioskLogger.e(TAG, "Error enforcing kiosk after unlock", e)
             }
         }
     }
-}
 
-private fun startFallbackServices(context: Context) {
-    try {
-        // Start basic enterprise service as fallback
-        val serviceIntent = Intent(context, EnterpriseKioskService::class.java)
-        serviceIntent.action = "START_MONITORING"
-        context.startForegroundService(serviceIntent)
+    private fun startFallbackServices(context: Context) {
+        try {
+            // Start basic enterprise service as fallback
+            val serviceIntent = Intent(context, EnterpriseKioskService::class.java)
+            serviceIntent.action = "START_MONITORING"
+            context.startForegroundService(serviceIntent)
 
-        KioskLogger.i(TAG, "Fallback services started")
-    } catch (e: Exception) {
-        KioskLogger.e(TAG, "Failed to start fallback services", e)
+            KioskLogger.i(TAG, "Fallback services started")
+        } catch (e: Exception) {
+            KioskLogger.e(TAG, "Failed to start fallback services", e)
+        }
     }
-}
 
-private fun setAsDefaultLauncher(context: Context) {
+    private fun setAsDefaultLauncher(context: Context) {
         try {
             val packageManager = context.packageManager
             val componentName = ComponentName(context, "nu.brandrisk.kioskmode.MainActivity")
-            
+
             // Enable our launcher
             packageManager.setComponentEnabledSetting(
                 componentName,
                 android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                 android.content.pm.PackageManager.DONT_KILL_APP
             )
-            
+
             KioskLogger.i(TAG, "Set as default launcher")
-            
+
         } catch (e: Exception) {
             KioskLogger.e(TAG, "Error setting default launcher", e)
         }
     }
-    
+
     private fun launchKioskApp(context: Context) {
         try {
             val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
@@ -171,9 +171,9 @@ private fun setAsDefaultLauncher(context: Context) {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 context.startActivity(this)
             }
-            
+
             KioskLogger.i(TAG, "Launched kiosk app")
-            
+
         } catch (e: Exception) {
             KioskLogger.e(TAG, "Error launching kiosk app", e)
         }
