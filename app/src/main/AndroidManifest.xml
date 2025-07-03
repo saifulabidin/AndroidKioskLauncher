@@ -37,30 +37,39 @@
     <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <uses-permission android:name="android.permission.SET_WALLPAPER_HINTS" />
     
+    <!-- SureLock-equivalent App Management -->
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
+    <uses-permission android:name="android.permission.INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.DELETE_PACKAGES" />
+    <uses-permission android:name="android.permission.CLEAR_APP_CACHE" />
+    <uses-permission android:name="android.permission.GET_PACKAGE_SIZE" />
+    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES" />
+    
+    <!-- SureLock-equivalent System Control -->
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_STATS" />
+    <uses-permission android:name="android.permission.BROADCAST_STICKY" />
+    <uses-permission android:name="android.permission.PERSISTENT_ACTIVITY" />
+    <uses-permission android:name="android.permission.SET_TIME_ZONE" />
+    <uses-permission android:name="android.permission.SET_TIME" />
+    
     <!-- File & Storage Management -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <uses-permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER" />
+    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
     
-    <!-- Samsung Knox Enterprise Permissions -->
-    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_KIOSK_MODE" />
-    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_SECURITY" />
-    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_APP_MGMT" />
-    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_RESTRICTION" />
-    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_ADVANCED_RESTRICTION" />
-    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_CUSTOM_PROKIOSK" />
-    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_REMOTE_CONTROL" />
-    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_ENTERPRISE_DEVICE_ADMIN" />
-    <uses-permission android:name="com.samsung.android.knox.permission.KNOX_CUSTOM_SYSTEM" />
+    <!-- Samsung Knox Enterprise Permissions (OPTIONAL - Skip for now) -->
+    <!-- <uses-permission android:name="com.samsung.android.knox.permission.KNOX_KIOSK_MODE" /> -->
+    <!-- <uses-permission android:name="com.samsung.android.knox.permission.KNOX_SECURITY" /> -->
     
-    <!-- Samsung MDM Permissions -->
-    <uses-permission android:name="android.permission.sec.ENTERPRISE_DEVICE_ADMIN" />
-    <uses-permission android:name="android.permission.sec.MDM_KIOSK_MODE" />
-    <uses-permission android:name="android.permission.sec.MDM_APP_MGMT" />
-    <uses-permission android:name="android.permission.sec.MDM_RESTRICTION" />
-    <uses-permission android:name="android.permission.sec.MDM_SECURITY" />
-    <uses-permission android:name="android.permission.sec.MDM_REMOTE_CONTROL" />
+    <!-- Samsung MDM Permissions (OPTIONAL - Skip for now) -->
+    <!-- <uses-permission android:name="android.permission.sec.ENTERPRISE_DEVICE_ADMIN" /> -->
+    <!-- <uses-permission android:name="android.permission.sec.MDM_KIOSK_MODE" /> -->
     
     <!-- Accessibility & Input -->
     <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />

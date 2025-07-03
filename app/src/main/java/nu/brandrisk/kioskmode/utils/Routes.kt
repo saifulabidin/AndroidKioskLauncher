@@ -5,4 +5,5 @@ object Routes {
     const val LAUNCHER = "launcher"
     const val ADB_SETUP = "adb_setup"
     const val CONFIG_PARENTAL_CHECK = "config_parental_check"
+    const val ADMIN_PASSWORD = "admin_password"
 }

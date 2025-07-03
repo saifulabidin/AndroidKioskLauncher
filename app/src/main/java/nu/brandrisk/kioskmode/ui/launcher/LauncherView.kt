@@ -79,7 +79,7 @@ fun LauncherView(
                     currentTime = currentTime,
                     enabledAppsCount = enabledApps.size,
                     onConfigClick = {
-                        navController.navigate(Routes.CONFIG_PARENTAL_CHECK)
+                        navController.navigate(Routes.ADMIN_PASSWORD)
                     }
                 )
             }
@@ -109,7 +109,7 @@ fun LauncherView(
         // Floating Admin Button
         FloatingActionButton(
             onClick = {
-                navController.navigate(Routes.CONFIG_PARENTAL_CHECK)
+                navController.navigate(Routes.ADMIN_PASSWORD)
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)

@@ -15,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import nu.brandrisk.kioskmode.domain.AppRepository
 import nu.brandrisk.kioskmode.service.EnhancedEnterpriseKioskService
+import nu.brandrisk.kioskmode.ui.admin.AdminPasswordScreen
 import nu.brandrisk.kioskmode.ui.adbsetup.AdbSetupView
 import nu.brandrisk.kioskmode.ui.config.ConfigView
 import nu.brandrisk.kioskmode.ui.configparentalcheck.ConfigParentalCheckView
@@ -53,6 +54,9 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable(Routes.LAUNCHER) {
                             LauncherView(navController = navController)
+                        }
+                        composable(Routes.ADMIN_PASSWORD) {
+                            AdminPasswordScreen(navController = navController)
                         }
                         composable(Routes.CONFIG_PARENTAL_CHECK) {
                             ConfigParentalCheckView(navController = navController)

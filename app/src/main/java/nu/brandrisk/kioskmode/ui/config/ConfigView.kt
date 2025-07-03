@@ -1,22 +1,28 @@
 package nu.brandrisk.kioskmode.ui.config
 
+import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,7 +31,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import nu.brandrisk.kioskmode.R
 import nu.brandrisk.kioskmode.domain.HomeScreenSettings
-import nu.brandrisk.kioskmode.ui.shared.AppIconItem
 import nu.brandrisk.kioskmode.utils.UiEvent
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -68,7 +73,7 @@ fun ConfigView(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Professional kiosk solution for Xiaomi devices",
+                    text = "Professional kiosk solution for Android devices",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
@@ -81,13 +86,13 @@ fun ConfigView(
                 selected = selectedTab == 0,
                 onClick = { selectedTab = 0 },
                 text = { Text("Apps") },
-                icon = { Icon(Icons.Default.Apps, contentDescription = "Apps") }
+                icon = { Icon(Icons.Default.Home, contentDescription = "Apps") }
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
                 text = { Text("Security") },
-                icon = { Icon(Icons.Default.Security, contentDescription = "Security") }
+                icon = { Icon(Icons.Default.Lock, contentDescription = "Security") }
             )
             Tab(
                 selected = selectedTab == 2,
@@ -111,9 +116,9 @@ fun ConfigView(
                 context = context,
                 launcher = launcher
             )
-            1 -> SecurityManagementTab(viewModel = viewModel, context = context)
-            2 -> NetworkManagementTab(viewModel = viewModel, context = context)
-            3 -> HardwareManagementTab(viewModel = viewModel, context = context)
+            1 -> SecurityManagementTab(viewModel = viewModel)
+            2 -> NetworkManagementTab(viewModel = viewModel)
+            3 -> HardwareManagementTab(viewModel = viewModel)
         }
     }
 }
@@ -124,7 +129,7 @@ private fun AppsManagementTab(
     apps: List<nu.brandrisk.kioskmode.data.model.App>,
     imageLoader: coil.ImageLoader,
     viewModel: ConfigViewModel,
-    context: android.content.Context,
+    context: Context,
     launcher: androidx.activity.compose.ManagedActivityResultLauncher<android.content.Intent, androidx.activity.result.ActivityResult>
 ) {
     // Filter states
@@ -135,7 +140,7 @@ private fun AppsManagementTab(
     val filteredApps = remember(apps, searchQuery, selectedFilter) {
         apps.filter { app ->
             val matchesSearch = if (searchQuery.isBlank()) true else {
-                app.label.contains(searchQuery, ignoreCase = true) ||
+                app.title.contains(searchQuery, ignoreCase = true) ||
                 app.packageName.contains(searchQuery, ignoreCase = true)
             }
             
@@ -148,6 +153,7 @@ private fun AppsManagementTab(
             matchesSearch && matchesFilter
         }
     }
+    
     LazyVerticalGrid(
         columns = GridCells.Adaptive(120.dp),
         modifier = Modifier.fillMaxSize(),
@@ -210,7 +216,7 @@ private fun AppsManagementTab(
                                     modifier = Modifier.weight(1f),
                                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary)
                                 ) {
-                                    Icon(Icons.Default.LockOpen, contentDescription = null)
+                                    Icon(Icons.Default.Lock, contentDescription = null)
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(text = stringResource(R.string.disable_kiosk_mode))
                                 }
@@ -245,7 +251,7 @@ private fun AppsManagementTab(
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFF44336))
                             ) {
-                                Icon(Icons.Default.Block, contentDescription = null)
+                                Icon(Icons.Default.Lock, contentDescription = null)
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(text = stringResource(R.string.disable_all_apps))
                             }
@@ -254,20 +260,13 @@ private fun AppsManagementTab(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "📱 ${stringResource(R.string.enable_disable_apps)} (${apps.filter { it.isEnabled }.size}/${apps.size} enabled)",
-                    fontWeight = FontWeight.Bold
-                )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Enhanced App Filtering
+                // Search functionality
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("🔍 App Filtering & Search", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         
-                        // Search functionality
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
@@ -280,117 +279,35 @@ private fun AppsManagementTab(
                         
                         // Filter buttons
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            FilterChip(
+                            OutlinedButton(
                                 onClick = { selectedFilter = "all" },
-                                label = { Text("All (${apps.size})") },
-                                selected = selectedFilter == "all"
-                            )
+                                colors = if (selectedFilter == "all") ButtonDefaults.outlinedButtonColors(backgroundColor = MaterialTheme.colors.primary) else ButtonDefaults.outlinedButtonColors()
+                            ) {
+                                Text("All (${apps.size})")
+                            }
                             Spacer(modifier = Modifier.width(8.dp))
-                            FilterChip(
+                            OutlinedButton(
                                 onClick = { selectedFilter = "enabled" },
-                                label = { Text("Enabled (${apps.count { it.isEnabled }})") },
-                                selected = selectedFilter == "enabled"
-                            )
+                                colors = if (selectedFilter == "enabled") ButtonDefaults.outlinedButtonColors(backgroundColor = MaterialTheme.colors.primary) else ButtonDefaults.outlinedButtonColors()
+                            ) {
+                                Text("Enabled (${apps.count { it.isEnabled }})")
+                            }
                             Spacer(modifier = Modifier.width(8.dp))
-                            FilterChip(
+                            OutlinedButton(
                                 onClick = { selectedFilter = "disabled" },
-                                label = { Text("Disabled (${apps.count { !it.isEnabled }})") },
-                                selected = selectedFilter == "disabled"
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Category-based Management
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("📂 Category Management", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        val systemApps = apps.filter { isSystemApp(it.packageName, context) }
-                        val userApps = apps.filter { !isSystemApp(it.packageName, context) }
-                        
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Button(
-                                onClick = { 
-                                    // Enable/disable all system apps
-                                    viewModel.toggleSystemApps()
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF2196F3))
+                                colors = if (selectedFilter == "disabled") ButtonDefaults.outlinedButtonColors(backgroundColor = MaterialTheme.colors.primary) else ButtonDefaults.outlinedButtonColors()
                             ) {
-                                Icon(Icons.Default.Settings, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("System Apps (${systemApps.size})")
-                            }
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            Button(
-                                onClick = { 
-                                    // Enable/disable all user apps
-                                    viewModel.toggleUserApps()
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF9C27B0))
-                            ) {
-                                Icon(Icons.Default.Person, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("User Apps (${userApps.size})")
+                                Text("Disabled (${apps.count { !it.isEnabled }})")
                             }
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-
-                // Enterprise App Policies
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("🏢 Enterprise Policies", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        LazyRow(modifier = Modifier.fillMaxWidth()) {
-                            item {
-                                Button(
-                                    onClick = { viewModel.applyWhitelistPolicy() },
-                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF4CAF50))
-                                ) {
-                                    Text("Apply Whitelist")
-                                }
-                            }
-                            item { Spacer(modifier = Modifier.width(8.dp)) }
-                            item {
-                                Button(
-                                    onClick = { viewModel.applyEducationPolicy() },
-                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF2196F3))
-                                ) {
-                                    Text("Education Mode")
-                                }
-                            }
-                            item { Spacer(modifier = Modifier.width(8.dp)) }
-                            item {
-                                Button(
-                                    onClick = { viewModel.applyKioskPolicy() },
-                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFE94560))
-                                ) {
-                                    Text("Kiosk Mode")
-                                }
-                            }
-                            item { Spacer(modifier = Modifier.width(8.dp)) }
-                            item {
-                                Button(
-                                    onClick = { viewModel.applyBusinessPolicy() },
-                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF607D8B))
-                                ) {
-                                    Text("Business Mode")
-                                }
-                            }
-                        }
-                    }
-                }
+                Text(
+                    text = "📱 ${stringResource(R.string.enable_disable_apps)} (${apps.filter { it.isEnabled }.size}/${apps.size} enabled)",
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
 
@@ -407,8 +324,7 @@ private fun AppsManagementTab(
 
 @Composable
 private fun SecurityManagementTab(
-    viewModel: ConfigViewModel,
-    context: android.content.Context
+    viewModel: ConfigViewModel
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -420,26 +336,10 @@ private fun SecurityManagementTab(
                     Text("🔒 Security Features", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Device Admin Status
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Device Admin")
-                        Switch(
-                            checked = viewModel.isDeviceOwner(context),
-                            onCheckedChange = { /* Handle device admin toggle */ }
-                        )
-                    }
-                    
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    
-                    // Security Options
-                    SecurityOptionItem("Password Protection", "Set admin password", Icons.Default.Password)
-                    SecurityOptionItem("Biometric Lock", "Fingerprint/Face unlock", Icons.Default.Fingerprint)
-                    SecurityOptionItem("Session Timeout", "Auto-lock after inactivity", Icons.Default.Timer)
-                    SecurityOptionItem("Screen Recording Block", "Prevent screenshots", Icons.Default.Block)
+                    SecurityOptionItem("Password Protection", "Set admin password", Icons.Default.Lock)
+                    SecurityOptionItem("Biometric Lock", "Fingerprint/Face unlock", Icons.Default.Star)
+                    SecurityOptionItem("Session Timeout", "Auto-lock after inactivity", Icons.Default.Schedule)
+                    SecurityOptionItem("Screen Recording Block", "Prevent screenshots", Icons.Default.Lock)
                 }
             }
         }
@@ -450,8 +350,8 @@ private fun SecurityManagementTab(
                     Text("🛡️ MIUI Security Integration", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    SecurityOptionItem("Second Space", "MIUI workspace isolation", Icons.Default.Workspaces)
-                    SecurityOptionItem("App Lock Bypass", "Skip MIUI app locks", Icons.Default.LockOpen)
+                    SecurityOptionItem("Second Space", "MIUI workspace isolation", Icons.Default.Build)
+                    SecurityOptionItem("App Lock Bypass", "Skip MIUI app locks", Icons.Default.Lock)
                     SecurityOptionItem("Security Center", "MIUI security policies", Icons.Default.Security)
                 }
             }
@@ -461,8 +361,7 @@ private fun SecurityManagementTab(
 
 @Composable
 private fun NetworkManagementTab(
-    viewModel: ConfigViewModel,
-    context: android.content.Context
+    viewModel: ConfigViewModel
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -475,10 +374,10 @@ private fun NetworkManagementTab(
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     NetworkOptionItem("WiFi Management", "Configure enterprise WiFi", Icons.Default.Wifi)
-                    NetworkOptionItem("Mobile Data", "APN and data controls", Icons.Default.SimCard)
-                    NetworkOptionItem("Bluetooth", "Device connectivity", Icons.Default.Bluetooth)
-                    NetworkOptionItem("NFC", "Near field communication", Icons.Default.Nfc)
-                    NetworkOptionItem("VPN", "Enterprise VPN setup", Icons.Default.VpnKey)
+                    NetworkOptionItem("Mobile Data", "APN and data controls", Icons.Default.Phone)
+                    NetworkOptionItem("Bluetooth", "Device connectivity", Icons.Default.Share)
+                    NetworkOptionItem("NFC", "Near field communication", Icons.Default.Phone)
+                    NetworkOptionItem("VPN", "Enterprise VPN setup", Icons.Default.Lock)
                 }
             }
         }
@@ -487,8 +386,7 @@ private fun NetworkManagementTab(
 
 @Composable
 private fun HardwareManagementTab(
-    viewModel: ConfigViewModel,
-    context: android.content.Context
+    viewModel: ConfigViewModel
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -500,11 +398,11 @@ private fun HardwareManagementTab(
                     Text("⚙️ Hardware Controls", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    HardwareOptionItem("Camera", "Control camera access", Icons.Default.Camera)
+                    HardwareOptionItem("Camera", "Control camera access", Icons.Default.PhotoCamera)
                     HardwareOptionItem("Microphone", "Audio recording controls", Icons.Default.Mic)
-                    HardwareOptionItem("Display", "Brightness and rotation", Icons.Default.DisplaySettings)
+                    HardwareOptionItem("Display", "Brightness and rotation", Icons.Default.Settings)
                     HardwareOptionItem("Volume", "System audio controls", Icons.Default.VolumeUp)
-                    HardwareOptionItem("Flashlight", "LED torch control", Icons.Default.Flashlight)
+                    HardwareOptionItem("Flashlight", "LED torch control", Icons.Default.FlashOn)
                 }
             }
         }
@@ -515,8 +413,8 @@ private fun HardwareManagementTab(
                     Text("🔋 MIUI Optimizations", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    HardwareOptionItem("Battery Whitelist", "Prevent app killing", Icons.Default.Battery6Bar)
-                    HardwareOptionItem("Autostart Permission", "Boot optimization", Icons.Default.PowerSettingsNew)
+                    HardwareOptionItem("Battery Whitelist", "Prevent app killing", Icons.Default.BatteryFull)
+                    HardwareOptionItem("Autostart Permission", "Boot optimization", Icons.Default.Power)
                     HardwareOptionItem("Game Turbo", "Performance mode", Icons.Default.Speed)
                 }
             }
@@ -536,7 +434,7 @@ private fun SecurityOptionItem(title: String, description: String, icon: android
             Text(title, fontWeight = FontWeight.Medium)
             Text(description, fontSize = 12.sp, color = Color.Gray)
         }
-        Icon(Icons.Default.ChevronRight, contentDescription = null)
+        Icon(Icons.Default.ArrowForward, contentDescription = null)
     }
 }
 
@@ -552,7 +450,7 @@ private fun NetworkOptionItem(title: String, description: String, icon: androidx
             Text(title, fontWeight = FontWeight.Medium)
             Text(description, fontSize = 12.sp, color = Color.Gray)
         }
-        Icon(Icons.Default.ChevronRight, contentDescription = null)
+        Icon(Icons.Default.ArrowForward, contentDescription = null)
     }
 }
 
@@ -568,7 +466,7 @@ private fun HardwareOptionItem(title: String, description: String, icon: android
             Text(title, fontWeight = FontWeight.Medium)
             Text(description, fontSize = 12.sp, color = Color.Gray)
         }
-        Icon(Icons.Default.ChevronRight, contentDescription = null)
+        Icon(Icons.Default.ArrowForward, contentDescription = null)
     }
 }
 
@@ -610,9 +508,8 @@ private fun EnhancedAppIconItem(
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(app.packageName)
-                        .transformations(CoilAppIconFetcher.AppIconTransformation())
                         .build(),
-                    contentDescription = stringResource(R.string.icon_of_string, app.label),
+                    contentDescription = stringResource(R.string.icon_of_string, app.title),
                     imageLoader = imageLoader,
                     modifier = Modifier.size(48.dp)
                 )
@@ -625,7 +522,8 @@ private fun EnhancedAppIconItem(
                         modifier = Modifier
                             .size(16.dp)
                             .align(Alignment.TopEnd)
-                            .background(Color.Blue, CircleShape)
+                            .clip(CircleShape)
+                            .background(Color.Blue)
                             .padding(2.dp),
                         tint = Color.White
                     )
@@ -633,12 +531,13 @@ private fun EnhancedAppIconItem(
                 
                 if (!app.isEnabled) {
                     Icon(
-                        Icons.Default.Block,
+                        Icons.Default.Lock,
                         contentDescription = "Disabled",
                         modifier = Modifier
                             .size(16.dp)
                             .align(Alignment.TopStart)
-                            .background(Color.Red, CircleShape)
+                            .clip(CircleShape)
+                            .background(Color.Red)
                             .padding(2.dp),
                         tint = Color.White
                     )
@@ -648,7 +547,7 @@ private fun EnhancedAppIconItem(
             Spacer(modifier = Modifier.height(4.dp))
             
             Text(
-                text = app.label,
+                text = app.title,
                 fontSize = 10.sp,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
