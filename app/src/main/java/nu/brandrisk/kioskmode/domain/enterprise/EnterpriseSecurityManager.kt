@@ -44,27 +44,6 @@ class EnterpriseSecurityManager @Inject constructor(
         }
     }
 
-    suspend fun setBiometricLock(enabled: Boolean): Boolean = withContext(Dispatchers.IO) {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // Note: BiometricManager.from() requires androidx.biometric dependency
-                // For now, just simulate biometric lock enablement
-                biometricLockEnabled = enabled
-                setupBiometricAuthentication(enabled)
-                true
-            } else {
-                false
-            }
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    suspend fun setSessionTimeout(minutes: Int) = withContext(Dispatchers.IO) {
-        sessionTimeoutMinutes = minutes
-        setupSessionTimeout(minutes)
-    }
-
     suspend fun blockScreenRecording(enabled: Boolean): Boolean = withContext(Dispatchers.IO) {
         try {
             screenRecordingBlocked = enabled
@@ -95,17 +74,6 @@ class EnterpriseSecurityManager @Inject constructor(
     private fun removePasswordProtection() {
         // Remove password protection
         // Clear stored password data
-    }
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun setupBiometricAuthentication(enabled: Boolean) {
-        // Implement biometric authentication setup
-        // Configure fingerprint/face unlock
-    }
-
-    private fun setupSessionTimeout(minutes: Int) {
-        // Implement session timeout logic
-        // Auto-lock after inactivity
     }
 
     private fun setupScreenRecordingBlock() {
