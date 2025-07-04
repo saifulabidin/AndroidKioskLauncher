@@ -60,6 +60,13 @@ fun ConfigView(
                 is UiEvent.ShowMessage -> {
                     android.widget.Toast.makeText(context, event.message, android.widget.Toast.LENGTH_SHORT).show()
                 }
+                is UiEvent.StartActivity -> {
+                    try {
+                        context.startActivity(event.intent)
+                    } catch (e: Exception) {
+                        android.widget.Toast.makeText(context, "Failed to start activity: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
     }

@@ -3,6 +3,8 @@ package nu.brandrisk.kioskmode.ui.config
 import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.ComponentName
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
@@ -173,7 +175,53 @@ open class ConfigViewModel @Inject constructor(
     }
 
     fun setAsDefaultLauncher() {
-        // TODO: Implement set as default launcher
+        viewModelScope.launch {
+            try {
+                if (isDeviceOwner(context)) {
+                    val devicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+                    val adminComponent = ComponentName(context, nu.brandrisk.kioskmode.KioskDeviceAdminReceiver::class.java)
+                    val launcherComponent = ComponentName(context, nu.brandrisk.kioskmode.MainActivity::class.java)
+                    
+                    // Clear current defaults
+                    devicePolicyManager.clearPackagePersistentPreferredActivities(
+                        adminComponent, 
+                        context.packageName
+                    )
+                    
+                    // Set launcher intent filter
+                    val intentFilter = IntentFilter().apply {
+                        addAction(Intent.ACTION_MAIN)
+                        addCategory(Intent.CATEGORY_HOME)
+                        addCategory(Intent.CATEGORY_DEFAULT)
+                    }
+                    
+                    // Set as persistent preferred activity
+                    devicePolicyManager.addPersistentPreferredActivity(
+                        adminComponent,
+                        intentFilter,
+                        launcherComponent
+                    )
+                    
+                    _uiEvent.send(UiEvent.ShowMessage("Successfully set as default launcher"))
+                } else {
+                    // Fallback for non-device owner
+                    showLauncherSelectionDialog()
+                }
+            } catch (e: Exception) {
+                _uiEvent.send(UiEvent.ShowMessage("Failed to set as default launcher: ${e.message}"))
+            }
+        }
+    }
+    
+    private fun showLauncherSelectionDialog() {
+        viewModelScope.launch {
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            val chooser = Intent.createChooser(intent, "Select default launcher")
+            _uiEvent.send(UiEvent.StartActivity(chooser))
+        }
     }
 
     fun showBootAnimationSettings() {

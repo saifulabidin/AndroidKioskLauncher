@@ -47,6 +47,9 @@ fun ChangePasswordScreen(
                         popUpTo(navController.graph.startDestinationId)
                     }
                 }
+                is nu.brandrisk.kioskmode.utils.UiEvent.StartActivity -> {
+                    // Not used in this screen, but required for exhaustive when
+                }
             }
         }
     }
