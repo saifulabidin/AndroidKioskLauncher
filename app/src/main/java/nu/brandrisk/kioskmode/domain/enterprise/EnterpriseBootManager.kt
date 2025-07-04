@@ -113,25 +113,49 @@ class EnterpriseBootManager @Inject constructor(
      */
     suspend fun executeEnterpriseStartup(): Boolean = withContext(Dispatchers.IO) {
         try {
-            if (!isAutoStartEnabled()) {
-                return@withContext false
+            // If device owner but auto-start not enabled, enable it first
+            if (isDeviceOwner() && !isAutoStartEnabled()) {
+                android.util.Log.i("EnterpriseBootManager", "Device owner detected, auto-enabling kiosk mode")
+                enableAutoStart(
+                    startupMode = StartupMode.KIOSK_IMMEDIATE,
+                    bootDelayMs = DEFAULT_BOOT_DELAY,
+                    persistentMode = true
+                )
             }
             
-            val startupMode = getStartupMode()
-            val bootDelay = getBootDelay()
-            
-            // Wait for boot delay
-            kotlinx.coroutines.delay(bootDelay)
-            
-            // Execute startup based on mode
-            when (startupMode) {
-                StartupMode.NORMAL -> startNormalMode()
-                StartupMode.SILENT -> startSilentMode()
-                StartupMode.KIOSK_IMMEDIATE -> startKioskMode()
-                StartupMode.LAUNCHER_ONLY -> startLauncherMode()
+            // Execute kiosk startup if device owner (regardless of auto-start setting)
+            if (isDeviceOwner()) {
+                val bootDelay = getBootDelay()
+                
+                // Wait for boot delay
+                kotlinx.coroutines.delay(bootDelay)
+                
+                // Always start kiosk mode for device owner
+                startKioskMode()
+                
+                android.util.Log.i("EnterpriseBootManager", "Enterprise kiosk startup executed successfully")
+                return@withContext true
             }
             
-            true
+            // Fallback for non-device owner
+            if (isAutoStartEnabled()) {
+                val startupMode = getStartupMode()
+                val bootDelay = getBootDelay()
+                
+                // Wait for boot delay
+                kotlinx.coroutines.delay(bootDelay)
+                
+                // Execute startup based on mode
+                when (startupMode) {
+                    StartupMode.NORMAL -> startNormalMode()
+                    StartupMode.SILENT -> startSilentMode()
+                    StartupMode.KIOSK_IMMEDIATE -> startKioskMode()
+                    StartupMode.LAUNCHER_ONLY -> startLauncherMode()
+                }
+                return@withContext true
+            }
+            
+            false
         } catch (e: Exception) {
             android.util.Log.e("EnterpriseBootManager", "Enterprise startup failed", e)
             false
@@ -222,16 +246,58 @@ class EnterpriseBootManager @Inject constructor(
      * Start immediate kiosk mode
      */
     private fun startKioskMode() {
-        val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("startup_mode", "kiosk")
-            putExtra("auto_kiosk", true)
+        try {
+            // First, ensure kiosk mode is properly configured if device owner
+            if (isDeviceOwner()) {
+                configureKioskModeSettings()
+            }
+            
+            // Launch main activity with kiosk flags
+            val intent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("startup_mode", "kiosk")
+                putExtra("auto_kiosk", true)
+                putExtra("force_kiosk", true)
+            }
+            context.startActivity(intent)
+            
+            android.util.Log.i("EnterpriseBootManager", "Kiosk mode startup initiated")
+        } catch (e: Exception) {
+            android.util.Log.e("EnterpriseBootManager", "Failed to start kiosk mode", e)
         }
-        context.startActivity(intent)
+    }
+    
+    /**
+     * Configure kiosk mode settings for device owner
+     */
+    private fun configureKioskModeSettings() {
+        if (!isDeviceOwner()) return
         
-        // Enable lock task if device owner
-        if (isDeviceOwner()) {
-            // This will be handled by MainActivity
+        try {
+            val adminComponent = getAdminComponent()
+            
+            // Set lock task packages (allow all apps for flexibility)
+            val installedApps = context.packageManager.getInstalledApplications(android.content.pm.PackageManager.GET_META_DATA)
+            val packageNames = installedApps.map { it.packageName }.toTypedArray()
+            devicePolicyManager.setLockTaskPackages(adminComponent, packageNames)
+            
+            // Set as persistent preferred activity (home launcher)
+            val intentFilter = android.content.IntentFilter().apply {
+                addAction(Intent.ACTION_MAIN)
+                addCategory(Intent.CATEGORY_HOME)
+                addCategory(Intent.CATEGORY_DEFAULT)
+            }
+            
+            val launcherComponent = ComponentName(context, MainActivity::class.java)
+            devicePolicyManager.addPersistentPreferredActivity(
+                adminComponent,
+                intentFilter,
+                launcherComponent
+            )
+            
+            android.util.Log.i("EnterpriseBootManager", "Kiosk mode settings configured")
+        } catch (e: Exception) {
+            android.util.Log.e("EnterpriseBootManager", "Failed to configure kiosk settings", e)
         }
     }
     

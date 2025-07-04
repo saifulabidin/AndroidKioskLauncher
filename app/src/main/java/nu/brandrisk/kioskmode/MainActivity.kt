@@ -3,6 +3,8 @@ package nu.brandrisk.kioskmode
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.Context
+import android.content.ComponentName
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -44,6 +46,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Check if launched with auto kiosk mode
+        handleAutoKioskMode()
 
         // Request RECORD_AUDIO permission if not granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -191,5 +196,52 @@ class MainActivity : ComponentActivity() {
         // Ensure enterprise monitoring is active
         val intent = Intent(this, EnhancedEnterpriseKioskService::class.java)
         startForegroundService(intent)
+    }
+    
+    /**
+     * Handle auto kiosk mode when launched by boot receiver
+     */
+    private fun handleAutoKioskMode() {
+        val autoKiosk = intent.getBooleanExtra("auto_kiosk", false)
+        val forceKiosk = intent.getBooleanExtra("force_kiosk", false)
+        
+        if (autoKiosk || forceKiosk) {
+            android.util.Log.i("MainActivity", "Auto kiosk mode detected, enabling kiosk mode")
+            
+            // Enable kiosk mode immediately if device owner
+            if (isDeviceOwner()) {
+                enableKioskModeImmediately()
+            }
+        }
+    }
+    
+    /**
+     * Enable kiosk mode immediately (called from auto-start)
+     */
+    private fun enableKioskModeImmediately() {
+        try {
+            val devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as android.app.admin.DevicePolicyManager
+            val adminComponent = ComponentName(this, nu.brandrisk.kioskmode.KioskDeviceAdminReceiver::class.java)
+            
+            if (devicePolicyManager.isDeviceOwnerApp(packageName)) {
+                // Start lock task immediately
+                startLockTask()
+                android.util.Log.i("MainActivity", "Kiosk mode enabled immediately on boot")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Failed to enable kiosk mode immediately", e)
+        }
+    }
+    
+    /**
+     * Check if app is device owner
+     */
+    private fun isDeviceOwner(): Boolean {
+        return try {
+            val devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as android.app.admin.DevicePolicyManager
+            devicePolicyManager.isDeviceOwnerApp(packageName)
+        } catch (e: Exception) {
+            false
+        }
     }
 }
