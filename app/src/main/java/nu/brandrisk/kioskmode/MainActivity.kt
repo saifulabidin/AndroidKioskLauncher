@@ -76,6 +76,9 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.ADMIN_PASSWORD) {
                             AdminPasswordScreen(navController = navController)
                         }
+                        composable(Routes.ADMIN_MENU) {
+                            nu.brandrisk.kioskmode.ui.admin.AdminMenuScreen(navController = navController)
+                        }
                         composable(Routes.CONFIG_PARENTAL_CHECK) {
                             ConfigParentalCheckView(navController = navController)
                         }
@@ -87,9 +90,6 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(Routes.ADB_SETUP) {
                             AdbSetupView()
-                        }
-                        composable(Routes.CHANGE_PASSWORD) {
-                            nu.brandrisk.kioskmode.ui.admin.ChangePasswordScreen(navController = navController)
                         }
                         composable(Routes.BOOT_CONFIGURATION) {
                             nu.brandrisk.kioskmode.ui.bootconfig.BootConfigurationScreen(navController = navController)

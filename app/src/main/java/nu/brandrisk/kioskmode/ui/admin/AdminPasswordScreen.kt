@@ -32,7 +32,7 @@ import nu.brandrisk.kioskmode.ui.theme.KioskModeTheme
 /**
  * Enterprise Admin Password Screen
  * Professional password entry with security features
- * Default password: "0000"
+ * Default password: "1234"
  */
 @Composable
 fun AdminPasswordScreen(
@@ -124,7 +124,7 @@ fun AdminPasswordScreen(
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
-                                    text = "💡 Default password: 0000",
+                                    text = "💡 Default password: 1234",
                                     modifier = Modifier.padding(8.dp),
                                     fontSize = 12.sp,
                                     color = Color(0xFFFF9800),

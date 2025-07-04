@@ -9,34 +9,22 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import nu.brandrisk.kioskmode.data.model.App
 import nu.brandrisk.kioskmode.domain.AppRepository
 import nu.brandrisk.kioskmode.domain.ToggleKioskMode
-import nu.brandrisk.kioskmode.domain.enterprise.EnterpriseSecurityManager
-import nu.brandrisk.kioskmode.domain.enterprise.HardwareControlManager
-import nu.brandrisk.kioskmode.domain.enterprise.NetworkManager
-import nu.brandrisk.kioskmode.domain.enterprise.XiaomiMIUIManager
-import nu.brandrisk.kioskmode.domain.enterprise.EnterpriseBootManager
 import nu.brandrisk.kioskmode.utils.Routes
 import nu.brandrisk.kioskmode.utils.UiEvent
 import javax.inject.Inject
 
+
 @HiltViewModel
-class ConfigViewModel @Inject constructor(
+open class ConfigViewModel @Inject constructor(
     internal val toggleKioskMode: ToggleKioskMode,
     private val repository: AppRepository,
     @ApplicationContext private val context: Context,
-    val imageLoader: ImageLoader,
-    private val securityManager: EnterpriseSecurityManager,
-    private val networkManager: NetworkManager,
-    private val hardwareManager: HardwareControlManager,
-    private val xiaomiManager: XiaomiMIUIManager,
-    private val bootManager: EnterpriseBootManager
+    val imageLoader: ImageLoader
 ) : ViewModel() {
 
     val apps = repository.getApps()
@@ -44,24 +32,6 @@ class ConfigViewModel @Inject constructor(
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
-    // Enterprise feature states
-    private val _securitySettings = MutableStateFlow(SecuritySettings())
-    val securitySettings: StateFlow<SecuritySettings> = _securitySettings
-
-    private val _networkSettings = MutableStateFlow(NetworkSettings())
-    val networkSettings: StateFlow<NetworkSettings> = _networkSettings
-
-    private val _hardwareSettings = MutableStateFlow(HardwareSettings())
-    val hardwareSettings: StateFlow<HardwareSettings> = _hardwareSettings
-
-    private val _xiaomiSettings = MutableStateFlow(XiaomiSettings())
-    val xiaomiSettings: StateFlow<XiaomiSettings> = _xiaomiSettings
-
-    init {
-        loadEnterpriseSettings()
-    }
-
-    // Existing methods
     fun enableKioskMode(context: Context) {
         val result = toggleKioskMode.enableKioskMode(context)
         if (result == ToggleKioskMode.Result.NotDeviceOwner) {
@@ -107,650 +77,139 @@ class ConfigViewModel @Inject constructor(
         }
     }
 
-    // New Enterprise Security Methods
-    fun togglePasswordProtection(enabled: Boolean) {
-        viewModelScope.launch {
-            val result = securityManager.setPasswordProtection(enabled)
-            _securitySettings.value = _securitySettings.value.copy(passwordProtectionEnabled = result)
-        }
-    }
-
-    // Network Management Methods
-    fun configureEnterpriseWiFi(ssid: String, password: String, security: String) {
-        viewModelScope.launch {
-            val result = networkManager.configureWiFi(ssid, password, security)
-            _networkSettings.value = _networkSettings.value.copy(wifiConfigured = result)
-        }
-    }
-
-    fun toggleMobileData(enabled: Boolean) {
-        viewModelScope.launch {
-            val result = networkManager.setMobileDataEnabled(enabled)
-            _networkSettings.value = _networkSettings.value.copy(mobileDataEnabled = result)
-        }
-    }
-
-    fun toggleBluetooth(enabled: Boolean) {
-        viewModelScope.launch {
-            val result = networkManager.setBluetoothEnabled(enabled)
-            _networkSettings.value = _networkSettings.value.copy(bluetoothEnabled = result)
-        }
-    }
-
-    fun toggleNFC(enabled: Boolean) {
-        viewModelScope.launch {
-            val result = networkManager.setNFCEnabled(enabled)
-            _networkSettings.value = _networkSettings.value.copy(nfcEnabled = result)
-        }
-    }
-
-    fun configureVPN(serverAddress: String, username: String, password: String) {
-        viewModelScope.launch {
-            val result = networkManager.configureVPN(serverAddress, username, password)
-            _networkSettings.value = _networkSettings.value.copy(vpnConfigured = result)
-        }
-    }
-
-    // Hardware Control Methods
-    fun toggleCameraAccess(enabled: Boolean) {
-        viewModelScope.launch {
-            val result = hardwareManager.setCameraEnabled(enabled)
-            _hardwareSettings.value = _hardwareSettings.value.copy(cameraEnabled = result)
-        }
-    }
-
-    fun toggleMicrophoneAccess(enabled: Boolean) {
-        viewModelScope.launch {
-            val result = hardwareManager.setMicrophoneEnabled(enabled)
-            _hardwareSettings.value = _hardwareSettings.value.copy(microphoneEnabled = result)
-        }
-    }
-
-    fun setBrightness(level: Int) {
-        viewModelScope.launch {
-            hardwareManager.setBrightness(level)
-            _hardwareSettings.value = _hardwareSettings.value.copy(brightnessLevel = level)
-        }
-    }
-
-    fun setVolumeLevel(level: Int) {
-        viewModelScope.launch {
-            hardwareManager.setVolumeLevel(level)
-            _hardwareSettings.value = _hardwareSettings.value.copy(volumeLevel = level)
-        }
-    }
-
-    fun toggleFlashlight(enabled: Boolean) {
-        viewModelScope.launch {
-            val result = hardwareManager.setFlashlightEnabled(enabled)
-            _hardwareSettings.value = _hardwareSettings.value.copy(flashlightEnabled = result)
-        }
-    }
-
-    // Xiaomi MIUI-Specific Methods
-    fun enableSecondSpace() {
-        viewModelScope.launch {
-            val result = xiaomiManager.enableSecondSpace()
-            _xiaomiSettings.value = _xiaomiSettings.value.copy(secondSpaceEnabled = result)
-        }
-    }
-
-    fun addToBatteryWhitelist() {
-        viewModelScope.launch {
-            val result = xiaomiManager.addToBatteryWhitelist(context.packageName)
-            _xiaomiSettings.value = _xiaomiSettings.value.copy(batteryWhitelisted = result)
-        }
-    }
-
-    fun requestAutostartPermission() {
-        viewModelScope.launch {
-            val result = xiaomiManager.requestAutostartPermission()
-            _xiaomiSettings.value = _xiaomiSettings.value.copy(autostartEnabled = result)
-        }
-    }
-
-    fun enableGameTurboMode() {
-        viewModelScope.launch {
-            val result = xiaomiManager.enableGameTurboMode()
-            _xiaomiSettings.value = _xiaomiSettings.value.copy(gameTurboEnabled = result)
-        }
-    }
-
-    fun bypassAppLock(packageName: String) {
-        viewModelScope.launch {
-            val result = xiaomiManager.bypassAppLock(packageName)
-            _xiaomiSettings.value = _xiaomiSettings.value.copy(appLockBypassed = result)
-        }
-    }
-
-    private fun loadEnterpriseSettings() {
-        viewModelScope.launch {
-            // Load current settings from managers
-            _securitySettings.value = SecuritySettings(
-                passwordProtectionEnabled = securityManager.isPasswordProtectionEnabled(),
-                biometricLockEnabled = securityManager.isBiometricLockEnabled(),
-                sessionTimeoutMinutes = securityManager.getSessionTimeoutMinutes(),
-                screenRecordingBlocked = securityManager.isScreenRecordingBlocked()
-            )
-
-            _networkSettings.value = NetworkSettings(
-                wifiConfigured = networkManager.isWiFiConfigured(),
-                mobileDataEnabled = networkManager.isMobileDataEnabled(),
-                bluetoothEnabled = networkManager.isBluetoothEnabled(),
-                nfcEnabled = networkManager.isNFCEnabled(),
-                vpnConfigured = networkManager.isVPNConfigured()
-            )
-
-            _hardwareSettings.value = HardwareSettings(
-                cameraEnabled = hardwareManager.isCameraEnabled(),
-                microphoneEnabled = hardwareManager.isMicrophoneEnabled(),
-                brightnessLevel = hardwareManager.getBrightnessLevel(),
-                volumeLevel = hardwareManager.getVolumeLevel(),
-                flashlightEnabled = hardwareManager.isFlashlightEnabled()
-            )
-
-            _xiaomiSettings.value = XiaomiSettings(
-                secondSpaceEnabled = xiaomiManager.isSecondSpaceEnabled(),
-                batteryWhitelisted = xiaomiManager.isBatteryWhitelisted(context.packageName),
-                autostartEnabled = xiaomiManager.isAutostartEnabled(),
-                gameTurboEnabled = xiaomiManager.isGameTurboEnabled(),
-                appLockBypassed = xiaomiManager.isAppLockBypassed()
-            )
-        }
-    }
-
-    // Enhanced App Management Methods - Simplified
-    fun toggleSystemApps() {
-        viewModelScope.launch {
-            // Simplified implementation - toggle system apps enabled state
-            android.util.Log.i("ConfigViewModel", "System apps toggle requested")
-            // Implementation would integrate with repository when available
-        }
-    }
-
-    fun toggleUserApps() {
-        viewModelScope.launch {
-            // Simplified implementation - toggle user apps enabled state
-            android.util.Log.i("ConfigViewModel", "User apps toggle requested")
-            // Implementation would integrate with repository when available
-        }
-    }
-
-    // Enterprise Policy Presets - Simplified
-    fun applyWhitelistPolicy() {
-        viewModelScope.launch {
-            // Simplified whitelist policy implementation
-            android.util.Log.i("ConfigViewModel", "Whitelist policy applied")
-            // Implementation would integrate with repository when available
-        }
-    }
-
-    fun applyEducationPolicy() {
-        viewModelScope.launch {
-            // Simplified education policy implementation
-            android.util.Log.i("ConfigViewModel", "Education policy applied")
-            // Implementation would integrate with repository when available
-        }
-    }
-
-    fun applyKioskPolicy() {
-        viewModelScope.launch {
-            // Simplified kiosk policy implementation
-            android.util.Log.i("ConfigViewModel", "Strict kiosk policy applied - only essential apps enabled")
-            // Implementation would integrate with repository when available
-        }
-    }
-
-    fun applyBusinessPolicy() {
-        viewModelScope.launch {
-            // Simplified business policy implementation
-            android.util.Log.i("ConfigViewModel", "Business policy applied")
-            // Implementation would integrate with repository when available
-        }
-    }
-
-    // Helper methods for app categorization
-    private fun isSystemApp(packageName: String): Boolean {
-        return try {
-            val packageInfo = context.packageManager.getPackageInfo(packageName, 0)
-            (packageInfo.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    private fun isEducationalApp(packageName: String): Boolean {
-        val educationalKeywords = listOf("edu", "learn", "study", "school", "math", "science")
-        return educationalKeywords.any { packageName.contains(it, ignoreCase = true) }
-    }
-
-    private fun isBusinessApp(packageName: String): Boolean {
-        val businessKeywords = listOf("office", "work", "business", "enterprise", "corp")
-        return businessKeywords.any { packageName.contains(it, ignoreCase = true) }
-    }
-
-    // App export/import functionality (similar to SureLock)
-    fun exportAppList(): String {
-        // Export enabled apps list as JSON or CSV
-        return "Export functionality to be implemented"
-    }
-
-    fun importAppList(@Suppress("UNUSED_PARAMETER") data: String) {
-        // Import app configuration from file
-        viewModelScope.launch {
-            // Implementation for importing app configurations
-        }
-    }
-
-    // Security Management Functions
+    // Security Settings Methods
     fun showPasswordManager() {
         viewModelScope.launch {
-            _uiEvent.send(UiEvent.Navigate(Routes.ADMIN_PASSWORD))
+            _uiEvent.send(UiEvent.Navigate(Routes.CHANGE_PASSWORD))
         }
     }
 
     fun showBiometricSettings() {
-        viewModelScope.launch {
-            _uiEvent.send(UiEvent.ShowMessage("Biometric settings available with device owner"))
-            // TODO: Implement biometric settings
-        }
+        // TODO: Implement biometric settings
     }
 
     fun showSessionTimeoutSettings() {
-        viewModelScope.launch {
-            _uiEvent.send(UiEvent.ShowMessage("Session timeout configuration"))
-            // TODO: Implement session timeout
-        }
+        // TODO: Implement session timeout settings
     }
 
     fun toggleScreenRecordingBlock() {
-        viewModelScope.launch {
-            if (isDeviceOwner(context)) {
-                // TODO: Implement screen recording block
-                _uiEvent.send(UiEvent.ShowMessage("Screen recording block toggled"))
-            } else {
-                _uiEvent.send(UiEvent.ShowMessage("Device owner required"))
-            }
-        }
+        // TODO: Implement screen recording block
     }
 
+    // Xiaomi Settings Methods
     fun showSecondSpaceSettings() {
-        viewModelScope.launch {
-            // Check if MIUI device
-            val isMIUI = try {
-                val miuiVersion = System.getProperty("ro.miui.ui.version.name")
-                !miuiVersion.isNullOrEmpty()
-            } catch (e: Exception) {
-                false
-            }
-            
-            if (isMIUI) {
-                // TODO: Implement MIUI second space
-                _uiEvent.send(UiEvent.ShowMessage("Opening MIUI Second Space"))
-            } else {
-                _uiEvent.send(UiEvent.ShowMessage("MIUI device required"))
-            }
-        }
+        // TODO: Implement second space settings
     }
 
     fun showAppLockBypassSettings() {
-        viewModelScope.launch {
-            _uiEvent.send(UiEvent.ShowMessage("App lock bypass configuration"))
-            // TODO: Implement app lock bypass
-        }
+        // TODO: Implement app lock bypass settings
     }
 
     fun showMIUISecurityCenter() {
-        viewModelScope.launch {
-            // Check if MIUI device
-            val isMIUI = try {
-                val miuiVersion = System.getProperty("ro.miui.ui.version.name")
-                !miuiVersion.isNullOrEmpty()
-            } catch (e: Exception) {
-                false
-            }
-            
-            if (isMIUI) {
-                // TODO: Implement MIUI security center
-                _uiEvent.send(UiEvent.ShowMessage("Opening MIUI Security Center"))
-            } else {
-                _uiEvent.send(UiEvent.ShowMessage("MIUI device required"))
-            }
-        }
+        // TODO: Implement MIUI security center
     }
 
-    // Network Management Functions
+    // Network Settings Methods
     fun showWiFiSettings() {
-        viewModelScope.launch {
-            try {
-                val intent = android.content.Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
-                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                _uiEvent.send(UiEvent.ShowMessage("Opening WiFi settings"))
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Cannot open WiFi settings"))
-            }
-        }
+        // TODO: Implement WiFi settings
     }
 
     fun showMobileDataSettings() {
-        viewModelScope.launch {
-            try {
-                val intent = android.content.Intent(android.provider.Settings.ACTION_DATA_ROAMING_SETTINGS)
-                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                _uiEvent.send(UiEvent.ShowMessage("Opening mobile data settings"))
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Cannot open mobile data settings"))
-            }
-        }
+        // TODO: Implement mobile data settings
     }
 
     fun showBluetoothSettings() {
-        viewModelScope.launch {
-            try {
-                val intent = android.content.Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS)
-                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                _uiEvent.send(UiEvent.ShowMessage("Opening Bluetooth settings"))
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Cannot open Bluetooth settings"))
-            }
-        }
+        // TODO: Implement Bluetooth settings
     }
 
     fun showNFCSettings() {
-        viewModelScope.launch {
-            try {
-                val intent = android.content.Intent(android.provider.Settings.ACTION_NFC_SETTINGS)
-                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                _uiEvent.send(UiEvent.ShowMessage("Opening NFC settings"))
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Cannot open NFC settings"))
-            }
-        }
+        // TODO: Implement NFC settings
     }
 
     fun showVPNSettings() {
-        viewModelScope.launch {
-            try {
-                val intent = android.content.Intent(android.provider.Settings.ACTION_VPN_SETTINGS)
-                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                _uiEvent.send(UiEvent.ShowMessage("Opening VPN settings"))
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Cannot open VPN settings"))
-            }
-        }
+        // TODO: Implement VPN settings
     }
 
-    // Hardware Management Functions
+    // Hardware Settings Methods
     fun showCameraSettings() {
-        viewModelScope.launch {
-            if (isDeviceOwner(context)) {
-                _uiEvent.send(UiEvent.ShowMessage("Camera controls available"))
-                // TODO: Implement camera controls
-            } else {
-                _uiEvent.send(UiEvent.ShowMessage("Device owner required for camera controls"))
-            }
-        }
+        // TODO: Implement camera settings
     }
 
     fun showMicrophoneSettings() {
-        viewModelScope.launch {
-            _uiEvent.send(UiEvent.ShowMessage("Microphone controls"))
-            // TODO: Implement microphone controls
-        }
+        // TODO: Implement microphone settings
     }
 
     fun showDisplaySettings() {
-        viewModelScope.launch {
-            try {
-                val intent = android.content.Intent(android.provider.Settings.ACTION_DISPLAY_SETTINGS)
-                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                _uiEvent.send(UiEvent.ShowMessage("Opening display settings"))
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Cannot open display settings"))
-            }
-        }
+        // TODO: Implement display settings
     }
 
     fun showVolumeSettings() {
-        viewModelScope.launch {
-            try {
-                val intent = android.content.Intent(android.provider.Settings.ACTION_SOUND_SETTINGS)
-                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                _uiEvent.send(UiEvent.ShowMessage("Opening volume settings"))
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Cannot open volume settings"))
-            }
-        }
+        // TODO: Implement volume settings
     }
 
     fun showFlashlightSettings() {
-        viewModelScope.launch {
-            _uiEvent.send(UiEvent.ShowMessage("Flashlight toggled"))
-            // TODO: Implement flashlight toggle
-        }
+        // TODO: Implement flashlight settings
     }
 
+    // Optimization Methods
     fun showBatteryOptimizationSettings() {
-        viewModelScope.launch {
-            try {
-                val intent = android.content.Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                _uiEvent.send(UiEvent.ShowMessage("Opening battery optimization"))
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Cannot open battery optimization"))
-            }
-        }
+        // TODO: Implement battery optimization settings
     }
 
     fun showAutostartSettings() {
-        viewModelScope.launch {
-            // Check if MIUI device
-            val isMIUI = try {
-                val miuiVersion = System.getProperty("ro.miui.ui.version.name")
-                !miuiVersion.isNullOrEmpty()
-            } catch (e: Exception) {
-                false
-            }
-            
-            if (isMIUI) {
-                _uiEvent.send(UiEvent.ShowMessage("Opening MIUI autostart settings"))
-                // TODO: Implement MIUI autostart
-            } else {
-                _uiEvent.send(UiEvent.ShowMessage("Autostart settings"))
-            }
-        }
+        // TODO: Implement autostart settings
     }
 
     fun showGameTurboSettings() {
-        viewModelScope.launch {
-            // Check if MIUI device
-            val isMIUI = try {
-                val miuiVersion = System.getProperty("ro.miui.ui.version.name")
-                !miuiVersion.isNullOrEmpty()
-            } catch (e: Exception) {
-                false
-            }
-            
-            if (isMIUI) {
-                _uiEvent.send(UiEvent.ShowMessage("Opening Game Turbo"))
-                // TODO: Implement Game Turbo
-            } else {
-                _uiEvent.send(UiEvent.ShowMessage("Game Turbo not available"))
-            }
-        }
+        // TODO: Implement game turbo settings
     }
 
-    // System Management Functions
-    fun toggleAutoLaunchOnBoot() {
-        viewModelScope.launch {
-            try {
-                val currentStatus = bootManager.getAutoStartStatus()
-                if (currentStatus.isEnabled) {
-                    val success = bootManager.disableAutoStart()
-                    _uiEvent.send(UiEvent.ShowMessage(
-                        if (success) "Auto-start disabled" else "Failed to disable auto-start"
-                    ))
-                } else {
-                    val success = bootManager.enableAutoStart(
-                        startupMode = nu.brandrisk.kioskmode.domain.enterprise.EnterpriseBootManager.Companion.StartupMode.KIOSK_IMMEDIATE,
-                        bootDelayMs = 3000L,
-                        persistentMode = true
-                    )
-                    _uiEvent.send(UiEvent.ShowMessage(
-                        if (success) "Enterprise auto-start enabled" else "Device owner required for full functionality"
-                    ))
-                }
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Error: ${e.message}"))
-            }
-        }
-    }
-
-    fun setAsDefaultLauncher() {
-        viewModelScope.launch {
-            val success = bootManager.setAsDefaultLauncher()
-            _uiEvent.send(UiEvent.ShowMessage(
-                if (success) "Set as default launcher" else "Please select this app as default launcher"
-            ))
-        }
-    }
-
-    fun showBootAnimationSettings() {
-        viewModelScope.launch {
-            _uiEvent.send(UiEvent.ShowMessage("Boot animation settings"))
-            // TODO: Implement boot animation customization
-        }
-    }
-
-    fun toggleStatusBarVisibility() {
-        viewModelScope.launch {
-            if (isDeviceOwner(context)) {
-                _uiEvent.send(UiEvent.ShowMessage("Status bar visibility toggled"))
-                // TODO: Implement status bar toggle
-            } else {
-                _uiEvent.send(UiEvent.ShowMessage("Device owner required to hide status bar"))
-            }
-        }
-    }
-
-    fun toggleNavigationBarVisibility() {
-        viewModelScope.launch {
-            if (isDeviceOwner(context)) {
-                _uiEvent.send(UiEvent.ShowMessage("Navigation bar visibility toggled"))
-                // TODO: Implement navigation bar toggle
-            } else {
-                _uiEvent.send(UiEvent.ShowMessage("Device owner required"))
-            }
-        }
-    }
-
-    fun toggleImmersiveMode() {
-        viewModelScope.launch {
-            _uiEvent.send(UiEvent.ShowMessage("Immersive mode toggled"))
-            // TODO: Implement immersive mode
-        }
-    }
-
-    fun showOrientationSettings() {
-        viewModelScope.launch {
-            try {
-                val intent = android.content.Intent(android.provider.Settings.ACTION_DISPLAY_SETTINGS)
-                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                _uiEvent.send(UiEvent.ShowMessage("Screen orientation settings"))
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Cannot open orientation settings"))
-            }
-        }
-    }
-
-    fun showCPUGovernorSettings() {
-        viewModelScope.launch {
-            _uiEvent.send(UiEvent.ShowMessage("CPU governor settings (root required)"))
-            // TODO: Implement CPU governor if root available
-        }
-    }
-
-    fun showRAMManagementSettings() {
-        viewModelScope.launch {
-            try {
-                val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_SETTINGS)
-                intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                _uiEvent.send(UiEvent.ShowMessage("RAM management settings"))
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Cannot open memory settings"))
-            }
-        }
-    }
-
-    fun showThermalSettings() {
-        viewModelScope.launch {
-            _uiEvent.send(UiEvent.ShowMessage("Thermal management settings"))
-            // TODO: Implement thermal settings
-        }
-    }
-
-    fun removeDeviceOwner() {
-        viewModelScope.launch {
-            try {
-                val devicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-
-                if (devicePolicyManager.isDeviceOwnerApp(context.packageName)) {
-                    devicePolicyManager.clearDeviceOwnerApp(context.packageName)
-                    _uiEvent.send(UiEvent.ShowMessage("Device owner removed successfully!"))
-                } else {
-                    _uiEvent.send(UiEvent.ShowMessage("Not a device owner"))
-                }
-            } catch (e: Exception) {
-                _uiEvent.send(UiEvent.ShowMessage("Failed to remove device owner: ${e.message}"))
-            }
-        }
-    }
-
+    // Boot Configuration Methods
     fun showBootConfigurationScreen() {
         viewModelScope.launch {
             _uiEvent.send(UiEvent.Navigate(Routes.BOOT_CONFIGURATION))
         }
     }
+
+    fun setAsDefaultLauncher() {
+        // TODO: Implement set as default launcher
+    }
+
+    fun showBootAnimationSettings() {
+        // TODO: Implement boot animation settings
+    }
+
+    // UI Control Methods
+    fun toggleStatusBarVisibility() {
+        // TODO: Implement status bar visibility toggle
+    }
+
+    fun toggleNavigationBarVisibility() {
+        // TODO: Implement navigation bar visibility toggle
+    }
+
+    fun toggleImmersiveMode() {
+        // TODO: Implement immersive mode toggle
+    }
+
+    fun showOrientationSettings() {
+        // TODO: Implement orientation settings
+    }
+
+    // System Methods
+    fun showCPUGovernorSettings() {
+        // TODO: Implement CPU governor settings
+    }
+
+    fun showRAMManagementSettings() {
+        // TODO: Implement RAM management settings
+    }
+
+    fun showThermalSettings() {
+        // TODO: Implement thermal settings
+    }
+
+    fun removeDeviceOwner() {
+        // TODO: Implement remove device owner
+    }
 }
-
-// Data classes for enterprise settings
-data class SecuritySettings(
-    val passwordProtectionEnabled: Boolean = false,
-    val biometricLockEnabled: Boolean = false,
-    val sessionTimeoutMinutes: Int = 30,
-    val screenRecordingBlocked: Boolean = false
-)
-
-data class NetworkSettings(
-    val wifiConfigured: Boolean = false,
-    val mobileDataEnabled: Boolean = true,
-    val bluetoothEnabled: Boolean = true,
-    val nfcEnabled: Boolean = true,
-    val vpnConfigured: Boolean = false
-)
-
-data class HardwareSettings(
-    val cameraEnabled: Boolean = true,
-    val microphoneEnabled: Boolean = true,
-    val brightnessLevel: Int = 50,
-    val volumeLevel: Int = 50,
-    val flashlightEnabled: Boolean = false
-)
-
-data class XiaomiSettings(
-    val secondSpaceEnabled: Boolean = false,
-    val batteryWhitelisted: Boolean = false,
-    val autostartEnabled: Boolean = false,
-    val gameTurboEnabled: Boolean = false,
-    val appLockBypassed: Boolean = false
-)
