@@ -2,6 +2,7 @@ package nu.brandrisk.kioskmode.ui.config
 
 import android.app.admin.DevicePolicyManager
 import android.content.Context
+import android.content.ComponentName
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
@@ -210,6 +211,69 @@ open class ConfigViewModel @Inject constructor(
     }
 
     fun removeDeviceOwner() {
-        // TODO: Implement remove device owner
+        viewModelScope.launch {
+            try {
+                val devicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+                val adminComponent = ComponentName(context, nu.brandrisk.kioskmode.KioskDeviceAdminReceiver::class.java)
+                
+                if (devicePolicyManager.isDeviceOwnerApp(context.packageName)) {
+                    // First disable auto-start to prevent re-enabling
+                    disableAutoStartBootManager()
+                    
+                    // Stop any active kiosk mode
+                    try {
+                        // Clear lock task packages
+                        devicePolicyManager.setLockTaskPackages(adminComponent, emptyArray())
+                        
+                        // Clear persistent preferred activities
+                        devicePolicyManager.clearPackagePersistentPreferredActivities(
+                            adminComponent, 
+                            context.packageName
+                        )
+                        
+                        // Remove user restrictions
+                        devicePolicyManager.clearUserRestriction(adminComponent, android.os.UserManager.DISALLOW_SAFE_BOOT)
+                        devicePolicyManager.clearUserRestriction(adminComponent, android.os.UserManager.DISALLOW_MODIFY_ACCOUNTS)
+                        devicePolicyManager.clearUserRestriction(adminComponent, android.os.UserManager.DISALLOW_FACTORY_RESET)
+                        
+                    } catch (e: Exception) {
+                        android.util.Log.e("ConfigViewModel", "Error clearing device policies", e)
+                    }
+                    
+                    // Clear device owner
+                    try {
+                        devicePolicyManager.clearDeviceOwnerApp(context.packageName)
+                        android.util.Log.i("ConfigViewModel", "Device owner removed successfully")
+                    } catch (e: Exception) {
+                        android.util.Log.e("ConfigViewModel", "Failed to remove device owner", e)
+                    }
+                    
+                } else {
+                    android.util.Log.w("ConfigViewModel", "App is not device owner")
+                }
+                
+            } catch (e: Exception) {
+                android.util.Log.e("ConfigViewModel", "Error removing device owner", e)
+            }
+        }
+    }
+    
+    /**
+     * Disable auto-start in boot manager to prevent re-enabling
+     */
+    private suspend fun disableAutoStartBootManager() {
+        try {
+            // Access EnterpriseBootManager via Hilt if available
+            // For now, disable via SharedPreferences directly
+            val sharedPreferences = context.getSharedPreferences("enterprise_boot_prefs", Context.MODE_PRIVATE)
+            sharedPreferences.edit()
+                .putBoolean("auto_start_enabled", false)
+                .putBoolean("kiosk_mode_enabled", false)
+                .apply()
+                
+            android.util.Log.i("ConfigViewModel", "Auto-start disabled via SharedPreferences")
+        } catch (e: Exception) {
+            android.util.Log.e("ConfigViewModel", "Failed to disable auto-start", e)
+        }
     }
 }

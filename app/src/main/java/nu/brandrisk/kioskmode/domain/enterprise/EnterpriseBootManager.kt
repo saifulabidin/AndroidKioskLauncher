@@ -113,6 +113,13 @@ class EnterpriseBootManager @Inject constructor(
      */
     suspend fun executeEnterpriseStartup(): Boolean = withContext(Dispatchers.IO) {
         try {
+            // Check if auto-start is explicitly disabled (for development)
+            val explicitlyDisabled = sharedPreferences.getBoolean("auto_start_enabled", true) == false
+            if (explicitlyDisabled) {
+                android.util.Log.i("EnterpriseBootManager", "Auto-start explicitly disabled, skipping enterprise startup")
+                return@withContext false
+            }
+            
             // If device owner but auto-start not enabled, enable it first
             if (isDeviceOwner() && !isAutoStartEnabled()) {
                 android.util.Log.i("EnterpriseBootManager", "Device owner detected, auto-enabling kiosk mode")
@@ -123,8 +130,8 @@ class EnterpriseBootManager @Inject constructor(
                 )
             }
             
-            // Execute kiosk startup if device owner (regardless of auto-start setting)
-            if (isDeviceOwner()) {
+            // Execute kiosk startup if device owner (and not explicitly disabled)
+            if (isDeviceOwner() && !explicitlyDisabled) {
                 val bootDelay = getBootDelay()
                 
                 // Wait for boot delay
