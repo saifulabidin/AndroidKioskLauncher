@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,6 +41,7 @@ fun LauncherView(
     val imageLoader = viewModel.imageLoader
     val context = LocalContext.current
     val enabledApps = apps.value.filter { it.isEnabled && it.packageName != context.packageName }
+    val launcherSettings = viewModel.launcherSettings.collectAsState()
     
     // Real-time clock state
     var currentTime by remember { mutableStateOf(getCurrentTime()) }
@@ -86,7 +88,10 @@ fun LauncherView(
 
             // Quick Actions
             item(span = { GridItemSpan(maxLineSpan) }) {
-                QuickActionsSection(viewModel = viewModel)
+                QuickActionsSection(
+                    viewModel = viewModel,
+                    showAppLabels = launcherSettings.value.showAppLabels
+                )
             }
 
             // Apps Grid
@@ -94,6 +99,7 @@ fun LauncherView(
                 EnterpriseAppItem(
                     app = app,
                     imageLoader = imageLoader,
+                    showLabel = launcherSettings.value.showAppLabels,
                     onClick = { viewModel.startApplication(app) }
                 )
             }
@@ -213,7 +219,10 @@ private fun EnterpriseHeader(
 }
 
 @Composable
-private fun QuickActionsSection(viewModel: LauncherViewModel) {
+private fun QuickActionsSection(
+    viewModel: LauncherViewModel,
+    showAppLabels: Boolean
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         backgroundColor = Color.White.copy(alpha = 0.05f),
@@ -231,28 +240,52 @@ private fun QuickActionsSection(viewModel: LauncherViewModel) {
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                QuickActionButton(
-                    icon = Icons.Default.Wifi,
-                    label = "WiFi",
-                    onClick = { viewModel.openWiFiSettings() }
-                )
-                QuickActionButton(
-                    icon = Icons.Default.Bluetooth,
-                    label = "Bluetooth",
-                    onClick = { viewModel.openBluetoothSettings() }
-                )
-                QuickActionButton(
-                    icon = Icons.Default.VolumeUp,
-                    label = "Volume",
-                    onClick = { viewModel.openVolumePanel() }
-                )
-                QuickActionButton(
-                    icon = Icons.Default.Brightness6,
-                    label = "Brightness",
-                    onClick = { viewModel.openBrightnessSettings() }
-                )
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    QuickActionButton(
+                        icon = Icons.Default.Wifi,
+                        label = "WiFi",
+                        showLabel = showAppLabels,
+                        onClick = { viewModel.openWiFiSettings() }
+                    )
+                    QuickActionButton(
+                        icon = Icons.Default.Bluetooth,
+                        label = "Bluetooth",
+                        showLabel = showAppLabels,
+                        onClick = { viewModel.openBluetoothSettings() }
+                    )
+                    QuickActionButton(
+                        icon = Icons.AutoMirrored.Filled.VolumeUp,
+                        label = "Volume",
+                        showLabel = showAppLabels,
+                        onClick = { viewModel.openVolumePanel() }
+                    )
+                    QuickActionButton(
+                        icon = Icons.Default.Brightness6,
+                        label = "Brightness",
+                        showLabel = showAppLabels,
+                        onClick = { viewModel.openBrightnessSettings() }
+                    )
+                }
+                
+                // Toggle Labels Button
+                IconButton(
+                    onClick = { viewModel.toggleAppLabels() },
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.2f))
+                ) {
+                    Icon(
+                        if (showAppLabels) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = if (showAppLabels) "Hide Labels" else "Show Labels",
+                        tint = Color.White
+                    )
+                }
             }
         }
     }
@@ -262,6 +295,7 @@ private fun QuickActionsSection(viewModel: LauncherViewModel) {
 private fun QuickActionButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
+    showLabel: Boolean = true,
     onClick: () -> Unit
 ) {
     Column(
@@ -283,13 +317,15 @@ private fun QuickActionButton(
             )
         }
         
-        Spacer(modifier = Modifier.height(4.dp))
-        
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color.White.copy(alpha = 0.8f)
-        )
+        if (showLabel) {
+            Spacer(modifier = Modifier.height(4.dp))
+            
+            Text(
+                text = label,
+                fontSize = 12.sp,
+                color = Color.White.copy(alpha = 0.8f)
+            )
+        }
     }
 }
 
@@ -297,6 +333,7 @@ private fun QuickActionButton(
 private fun EnterpriseAppItem(
     app: nu.brandrisk.kioskmode.data.model.App,
     imageLoader: coil.ImageLoader,
+    showLabel: Boolean = true,
     onClick: () -> Unit
 ) {
     Card(
@@ -310,7 +347,8 @@ private fun EnterpriseAppItem(
         AppIconItem(
             modifier = Modifier.padding(8.dp),
             app = app,
-            imageLoader = imageLoader
+            imageLoader = imageLoader,
+            showLabel = showLabel
         )
     }
 }

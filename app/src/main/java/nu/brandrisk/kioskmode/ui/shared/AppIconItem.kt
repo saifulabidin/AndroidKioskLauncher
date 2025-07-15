@@ -22,7 +22,8 @@ import nu.brandrisk.kioskmode.data.model.App
 fun AppIconItem(
     modifier: Modifier = Modifier,
     app: App,
-    imageLoader: ImageLoader
+    imageLoader: ImageLoader,
+    showLabel: Boolean = true
 ) {
     Box(modifier = modifier
         .aspectRatio(1f)
@@ -54,13 +55,15 @@ fun AppIconItem(
                 }
             }
 
-            Text(
-                text = app.title,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+            if (showLabel) {
+                Text(
+                    text = app.title,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 

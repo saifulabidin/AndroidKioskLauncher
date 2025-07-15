@@ -8,11 +8,15 @@ import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import nu.brandrisk.kioskmode.data.model.App
 import nu.brandrisk.kioskmode.domain.AppRepository
 import nu.brandrisk.kioskmode.domain.enterprise.HardwareControlManager
 import nu.brandrisk.kioskmode.domain.enterprise.NetworkManager
+import nu.brandrisk.kioskmode.domain.launcher.LauncherSettingsRepository
 import nu.brandrisk.kioskmode.utils.ApplicationUtils
 import javax.inject.Inject
 
@@ -23,7 +27,8 @@ class LauncherViewModel @Inject constructor(
     val imageLoader: ImageLoader,
     val applicationUtils: ApplicationUtils,
     private val networkManager: NetworkManager,
-    private val hardwareManager: HardwareControlManager
+    private val hardwareManager: HardwareControlManager,
+    private val launcherSettingsRepository: LauncherSettingsRepository
 ): ViewModel() {
 
     fun startApplication(app: App) {
@@ -31,6 +36,17 @@ class LauncherViewModel @Inject constructor(
     }
 
     val apps = repository.getApps()
+    
+    // Launcher settings state
+    private val _launcherSettings = MutableStateFlow(launcherSettingsRepository.getLauncherSettings())
+    val launcherSettings: StateFlow<nu.brandrisk.kioskmode.data.model.LauncherSettings> = _launcherSettings.asStateFlow()
+    
+    fun toggleAppLabels() {
+        val currentSettings = _launcherSettings.value
+        val newSettings = currentSettings.copy(showAppLabels = !currentSettings.showAppLabels)
+        launcherSettingsRepository.saveLauncherSettings(newSettings)
+        _launcherSettings.value = newSettings
+    }
 
     /**
      * Quick Actions - Enterprise Controls
@@ -60,6 +76,7 @@ class LauncherViewModel @Inject constructor(
     fun openVolumePanel() {
         viewModelScope.launch {
             // Toggle volume or open volume controls
+            @Suppress("UNUSED_VARIABLE")
             val currentVolume = hardwareManager.getVolumeLevel()
             // You could implement a custom volume overlay here
             // For now, just open sound settings
@@ -91,6 +108,7 @@ class LauncherViewModel @Inject constructor(
     fun toggleWiFi() {
         viewModelScope.launch {
             // Toggle WiFi state
+            @Suppress("UNUSED_VARIABLE")
             val currentState = networkManager.isWiFiConfigured()
             // Implement WiFi toggle logic
         }
