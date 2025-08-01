@@ -124,7 +124,8 @@ class SecurityConfigurationActivity : Activity() {
                 // Set user restrictions
                 devicePolicyManager.addUserRestriction(adminComponent, android.os.UserManager.DISALLOW_SAFE_BOOT)
                 devicePolicyManager.addUserRestriction(adminComponent, android.os.UserManager.DISALLOW_FACTORY_RESET)
-                devicePolicyManager.addUserRestriction(adminComponent, android.os.UserManager.DISALLOW_ADD_USER)
+                // ⚠️ DO NOT restrict adding users - allow Google/WhatsApp account login
+                // devicePolicyManager.addUserRestriction(adminComponent, android.os.UserManager.DISALLOW_ADD_USER) // COMMENTED OUT - Allow account login
                 
                 KioskLogger.i(TAG, "Kiosk mode setup completed")
                 setResult(RESULT_OK)

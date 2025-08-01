@@ -140,7 +140,10 @@ class EnterpriseBootManager @Inject constructor(
                 // Always start kiosk mode for device owner
                 startKioskMode()
                 
-                android.util.Log.i("EnterpriseBootManager", "Enterprise kiosk startup executed successfully")
+                // 🔥 AUTO-ENABLE ACCOUNT LOGIN SUPPORT AFTER KIOSK SETUP 🔥
+                enableAccountLoginSupport()
+                
+                android.util.Log.i("EnterpriseBootManager", "Enterprise kiosk startup executed successfully with account login support")
                 return@withContext true
             }
             
@@ -204,6 +207,72 @@ class EnterpriseBootManager @Inject constructor(
     }
     
     /**
+     * Check if device can be set as device owner
+     */
+    fun canSetDeviceOwner(): Boolean {
+        return try {
+            // Check if any accounts exist
+            val accountManager = android.accounts.AccountManager.get(context)
+            val accounts = accountManager.accounts
+            
+            if (accounts.isNotEmpty()) {
+                android.util.Log.w("EnterpriseBootManager", 
+                    "Cannot set device owner: ${accounts.size} accounts found - ${accounts.map { "${it.type}:${it.name}" }}")
+                return false
+            }
+            true
+        } catch (e: Exception) {
+            android.util.Log.e("EnterpriseBootManager", "Failed to check accounts", e)
+            false
+        }
+    }
+
+    /**
+     * Get existing accounts information
+     */
+    fun getExistingAccounts(): List<String> {
+        return try {
+            val accountManager = android.accounts.AccountManager.get(context)
+            accountManager.accounts.map { "${it.type}: ${it.name}" }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
+     * Auto remove accounts if possible (requires device owner privileges)
+     */
+    suspend fun autoRemoveAccounts(): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            if (isDeviceOwner()) {
+                // If already device owner, can remove accounts
+                val accountManager = android.accounts.AccountManager.get(context)
+                val accounts = accountManager.accounts
+                
+                var removedCount = 0
+                for (account in accounts) {
+                    try {
+                        accountManager.removeAccountExplicitly(account)
+                        android.util.Log.i("EnterpriseBootManager", "Removed account: ${account.name}")
+                        removedCount++
+                    } catch (e: Exception) {
+                        android.util.Log.w("EnterpriseBootManager", "Failed to remove account: ${account.name}", e)
+                    }
+                }
+                
+                android.util.Log.i("EnterpriseBootManager", "Removed $removedCount accounts")
+                removedCount > 0
+            } else {
+                android.util.Log.w("EnterpriseBootManager", "Cannot remove accounts - not device owner")
+                false
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("EnterpriseBootManager", "Failed to remove accounts", e)
+            false
+        }
+    }
+
+    /**
      * Configure device owner boot policies
      */
     private fun configureDeviceOwnerBootPolicies() {
@@ -215,8 +284,10 @@ class EnterpriseBootManager @Inject constructor(
             // Disable safe mode to prevent bypassing kiosk
             devicePolicyManager.addUserRestriction(adminComponent, android.os.UserManager.DISALLOW_SAFE_BOOT)
             
-            // Prevent users from adding accounts
-            devicePolicyManager.addUserRestriction(adminComponent, android.os.UserManager.DISALLOW_MODIFY_ACCOUNTS)
+            // ⚠️ DO NOT restrict account modifications to allow Google/WhatsApp login
+            // Only restrict profile management, not account login/modification
+            // devicePolicyManager.addUserRestriction(adminComponent, android.os.UserManager.DISALLOW_MODIFY_ACCOUNTS)  // COMMENTED OUT - Allow Google/WhatsApp login
+            devicePolicyManager.addUserRestriction(adminComponent, android.os.UserManager.DISALLOW_ADD_MANAGED_PROFILE)
             
             // Disable factory reset
             devicePolicyManager.addUserRestriction(adminComponent, android.os.UserManager.DISALLOW_FACTORY_RESET)
@@ -440,6 +511,51 @@ class EnterpriseBootManager @Inject constructor(
             android.util.Log.i("EnterpriseBootManager", "Launched kiosk app")
         } catch (e: Exception) {
             android.util.Log.e("EnterpriseBootManager", "Error launching kiosk app", e)
+        }
+    }
+
+    /**
+     * Enable Google account login after device owner setup
+     * This allows users to login to Google/WhatsApp while maintaining kiosk mode
+     */
+    suspend fun enableAccountLoginSupport(): Boolean = withContext(Dispatchers.IO) {
+        return@withContext try {
+            if (isDeviceOwner()) {
+                android.util.Log.i("EnterpriseBootManager", "Enabling Google account login support...")
+                
+                // Re-enable Google services for account login
+                val packageManager = context.packageManager
+                
+                // Enable Google Play Services
+                packageManager.setApplicationEnabledSetting(
+                    "com.google.android.gms",
+                    android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    0
+                )
+                
+                // Enable Google Services Framework
+                packageManager.setApplicationEnabledSetting(
+                    "com.google.android.gsf", 
+                    android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    0
+                )
+                
+                // Enable Play Store
+                packageManager.setApplicationEnabledSetting(
+                    "com.android.vending",
+                    android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    0
+                )
+                
+                android.util.Log.i("EnterpriseBootManager", "Google account login support enabled successfully")
+                true
+            } else {
+                android.util.Log.w("EnterpriseBootManager", "Not device owner - cannot modify app states")
+                false
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("EnterpriseBootManager", "Failed to enable account login support", e)
+            false
         }
     }
 

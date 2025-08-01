@@ -60,6 +60,66 @@ open class ConfigViewModel @Inject constructor(
         return devicePolicyManager.isDeviceOwnerApp(context.packageName)
     }
 
+    /**
+     * Check device owner eligibility and account status
+     */
+    fun checkDeviceOwnerEligibility(): DeviceOwnerStatus {
+        return try {
+            val devicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+            
+            when {
+                devicePolicyManager.isDeviceOwnerApp(context.packageName) -> {
+                    DeviceOwnerStatus.ALREADY_DEVICE_OWNER
+                }
+                hasExistingAccounts() -> {
+                    DeviceOwnerStatus.ACCOUNTS_EXIST
+                }
+                else -> {
+                    DeviceOwnerStatus.READY_FOR_SETUP
+                }
+            }
+        } catch (e: Exception) {
+            DeviceOwnerStatus.ERROR
+        }
+    }
+
+    /**
+     * Check if device has existing accounts that would prevent device owner setup
+     */
+    private fun hasExistingAccounts(): Boolean {
+        return try {
+            val accountManager = android.accounts.AccountManager.get(context)
+            val accounts = accountManager.accounts
+            android.util.Log.i("ConfigViewModel", "Found ${accounts.size} accounts: ${accounts.map { "${it.type}:${it.name}" }}")
+            accounts.isNotEmpty()
+        } catch (e: Exception) {
+            android.util.Log.e("ConfigViewModel", "Failed to check accounts", e)
+            false
+        }
+    }
+
+    /**
+     * Get existing accounts for display to user
+     */
+    fun getExistingAccountsList(): List<String> {
+        return try {
+            val accountManager = android.accounts.AccountManager.get(context)
+            accountManager.accounts.map { "${it.type}: ${it.name}" }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
+     * Device Owner Status enum
+     */
+    enum class DeviceOwnerStatus {
+        ALREADY_DEVICE_OWNER,
+        READY_FOR_SETUP,
+        ACCOUNTS_EXIST,
+        ERROR
+    }
+
     fun updateEnabledFlag(app: App) {
         if (app.packageName != context.packageName) {
             viewModelScope.launch {
@@ -279,9 +339,10 @@ open class ConfigViewModel @Inject constructor(
                             context.packageName
                         )
                         
-                        // Remove user restrictions
+                        // Remove user restrictions (only clear what we actually set)
                         devicePolicyManager.clearUserRestriction(adminComponent, android.os.UserManager.DISALLOW_SAFE_BOOT)
-                        devicePolicyManager.clearUserRestriction(adminComponent, android.os.UserManager.DISALLOW_MODIFY_ACCOUNTS)
+                        // DO NOT clear DISALLOW_MODIFY_ACCOUNTS since we never set it (to allow Google/WhatsApp login)
+                        // devicePolicyManager.clearUserRestriction(adminComponent, android.os.UserManager.DISALLOW_MODIFY_ACCOUNTS) // COMMENTED OUT
                         devicePolicyManager.clearUserRestriction(adminComponent, android.os.UserManager.DISALLOW_FACTORY_RESET)
                         
                     } catch (e: Exception) {
