@@ -94,7 +94,7 @@ class MainActivity : ComponentActivity() {
                             nu.brandrisk.kioskmode.ui.changepassword.ChangePasswordScreen(navController = navController)
                         }
                         composable(Routes.ADB_SETUP) {
-                            nu.brandrisk.kioskmode.ui.adbsetup.SmartAdbSetupScreen()
+                            AdbSetupView()
                         }
                         composable(Routes.BOOT_CONFIGURATION) {
                             nu.brandrisk.kioskmode.ui.bootconfig.BootConfigurationScreen(navController = navController)
